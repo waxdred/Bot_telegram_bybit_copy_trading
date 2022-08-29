@@ -3,6 +3,7 @@ package main
 import (
 	"bybit/bybit/bybit"
 	"bybit/bybit/get"
+	"bybit/bybit/listen"
 	"bybit/bybit/post"
 	"bybit/bybit/print"
 	"bybit/bybit/telegram"
@@ -36,25 +37,30 @@ func main() {
 
 	updates := botapi.GetUpdatesChan(u)
 
+	go listen.GetPosition(api, &trade)
+
 	for update := range updates {
 		if update.ChannelPost != nil {
 			msg := update.ChannelPost.Text
 			dataBybite, err := telegram.ParseMsg(msg)
 			if err == nil && dataBybite.Trade {
 				price := get.GetPrice(dataBybite.Currency)
-				log.Println(print.PrettyPrint(price))
 				if price.RetCode == 0 {
-					trade.Add(api, dataBybite, price)
-					err := post.PostOrder(dataBybite.Currency, api, &trade)
-					if err != nil {
-						log.Println(err)
+					if trade.Add(api, dataBybite, price) {
+						err = post.PostOrder(dataBybite.Currency, api, &trade)
+						if err != nil {
+							log.Println(err)
+						}
+					} else {
+						log.Printf("You trade already this Symbol")
 					}
-
-					log.Println(print.PrettyPrint(trade))
-					log.Println(print.PrettyPrint(dataBybite))
 					trade.Print()
 				}
 			} else if err == nil && dataBybite.Cancel {
+				post.CancelOrder(dataBybite.Currency, api, &trade)
+				log.Printf("Cancel: %s", dataBybite.Currency)
+				log.Println(print.PrettyPrint(trade))
+			} else {
 				log.Printf("Error Parsing")
 			}
 		}

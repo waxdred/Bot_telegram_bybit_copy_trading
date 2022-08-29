@@ -67,6 +67,7 @@ func sendPost(
 		return req, err
 	}
 	json.NewDecoder(req.Body).Decode(&res)
+	trade.SetId(params["symbol"].(string), res.Result.OrderID)
 	println(print.PrettyPrint(res))
 	delete(params, "sign")
 	delete(params, "take_profit")
@@ -75,20 +76,55 @@ func sendPost(
 	return req, nil
 }
 
-func ChangeLs(api env.Env, params map[string]interface{}) error {
-	params["sign"] = sign.GetSignedinter(params, api.Api_secret)
+func CancelOrder(symbol string, api env.Env, trade *bybit.Trades) error {
+	params := map[string]string{
+		"api_key": api.Api,
+		"symbol":  symbol,
+	}
+
+	err := PostCancelOrder(params, api)
+	if err != nil {
+		return err
+	}
+	trade.Delete(symbol)
+	return nil
+}
+
+func PostCancelOrder(params map[string]string, api env.Env) error {
+	var cancel PostCancel
+
+	params["timestamp"] = print.GetTimestamp()
+	params["sign"] = sign.GetSigned(params, api.Api_secret)
 	json_data, err := json.Marshal(params)
 	if err != nil {
 		return err
 	}
-	_, err = http.Post(
-		"https://api-testnet.bybit.com/private/linear/position/trading-stop",
+	delete(params, "sign")
+	req, err := http.Post(
+		"https://api-testnet.bybit.com/private/linear/order/cancel-all",
 		"application/json",
-		bytes.NewBuffer(json_data),
-	)
+		bytes.NewBuffer(json_data))
 	if err != nil {
 		return err
 	}
-	// json.NewDecoder(req.Body).Decode(&res)
+	json.NewDecoder(req.Body).Decode(&cancel)
 	return nil
 }
+
+// func ChangeLs(api env.Env, params map[string]interface{}) error {
+// 	params["sign"] = sign.GetSignedinter(params, api.Api_secret)
+// 	json_data, err := json.Marshal(params)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	_, err = http.Post(
+// 		"https://api-testnet.bybit.com/private/linear/position/trading-stop",
+// 		"application/json",
+// 		bytes.NewBuffer(json_data),
+// 	)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// json.NewDecoder(req.Body).Decode(&res)
+// 	return nil
+// }

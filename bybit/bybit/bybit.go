@@ -20,6 +20,39 @@ func RoundFloat(val float64, precision uint) string {
 	return rets
 }
 
+func (t *Trades) SetId(symbol string, id string) {
+	ls := *t
+
+	for i := 0; i < len(ls); i++ {
+		if ls[i].Symbol == symbol {
+			ls[i].Id = append(ls[i].Id, id)
+		}
+	}
+}
+
+func (t *Trades) GetSymbolOrder() []string {
+	ls := *t
+	var ret []string
+	var check bool
+
+	for i := 0; i < len(ls); i++ {
+		check = true
+		if ret == nil {
+			ret = append(ret, ls[i].Symbol)
+		} else {
+			for j := 0; j < len(ret); j++ {
+				if ret[j] == ls[i].Symbol {
+					check = false
+				}
+			}
+			if check {
+				ret = append(ret, ls[i].Symbol)
+			}
+		}
+	}
+	return ret
+}
+
 func (t *Trades) CheckSymbol(symbol string) bool {
 	ls := *t
 
@@ -207,4 +240,12 @@ func (t *Trades) GetSl(symbol string) string {
 		return ret.Sl
 	}
 	return ""
+}
+
+func (t *Trades) GetId(symbol string) []string {
+	ret := GetTrade(symbol, t)
+	if ret != nil {
+		return ret.Id
+	}
+	return nil
 }

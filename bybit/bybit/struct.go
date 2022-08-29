@@ -15,4 +15,5 @@ type Trade struct {
 	Tp2         string `json:"tp2"`
 	Tp3         string `json:"tp3"`
 	Sl          string `json:"Sl"`
+	Id          []string
 }
