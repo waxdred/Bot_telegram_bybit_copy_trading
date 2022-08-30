@@ -7,6 +7,7 @@ import (
 	"bybit/env"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -23,17 +24,17 @@ func PostOrder(symbol string, api env.Env, trade *bybit.Trades) error {
 		"stop_loss":        trade.GetSl(symbol),
 	}
 	// tp1
-	_, err := sendPost(params, trade.GetTp1(symbol), api.Api_secret, trade, trade.GetTp1Order(symbol))
+	_, err := sendPost(params, trade.GetTp1(symbol), api, trade, trade.GetTp1Order(symbol))
 	if err != nil {
 		return err
 	}
 	// tp2
-	_, err = sendPost(params, trade.GetTp2(symbol), api.Api_secret, trade, trade.GetTp2Order(symbol))
+	_, err = sendPost(params, trade.GetTp2(symbol), api, trade, trade.GetTp2Order(symbol))
 	if err != nil {
 		return err
 	}
 	// tp3
-	_, err = sendPost(params, trade.GetTp3(symbol), api.Api_secret, trade, trade.GetTp3Order(symbol))
+	_, err = sendPost(params, trade.GetTp3(symbol), api, trade, trade.GetTp3Order(symbol))
 	if err != nil {
 		return err
 	}
@@ -43,7 +44,7 @@ func PostOrder(symbol string, api env.Env, trade *bybit.Trades) error {
 func sendPost(
 	params map[string]interface{},
 	tp string,
-	api_secret string,
+	api env.Env,
 	trade *bybit.Trades,
 	order string,
 ) (*http.Response, error) {
@@ -52,14 +53,15 @@ func sendPost(
 	params["take_profit"] = tp
 	params["qty"] = order
 	params["timestamp"] = print.GetTimestamp()
-	params["sign"] = sign.GetSignedinter(params, api_secret)
+	params["sign"] = sign.GetSignedinter(params, api.Api_secret)
 	json_data, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
 	}
 	println(print.PrettyPrint(params))
+	url := fmt.Sprint(api.Url, "/private/linear/order/create")
 	req, err := http.Post(
-		"https://api-testnet.bybit.com/private/linear/order/create",
+		url,
 		"application/json",
 		bytes.NewBuffer(json_data),
 	)

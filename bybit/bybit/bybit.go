@@ -76,7 +76,7 @@ func GetTrade(symbol string, t *Trades) *Trade {
 }
 
 func (t *Trades) Add(api env.Env, data telegram.Data, price get.Price) bool {
-	wallet := get.GetWallet(api.Api, api.Api_secret)
+	wallet := get.GetWallet(api)
 	available := wallet.Result.Usdt.AvailableBalance / 3
 	prices, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
 	log.Println(print.PrettyPrint(available))

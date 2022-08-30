@@ -44,7 +44,7 @@ func main() {
 			msg := update.ChannelPost.Text
 			dataBybite, err := telegram.ParseMsg(msg)
 			if err == nil && dataBybite.Trade {
-				price := get.GetPrice(dataBybite.Currency)
+				price := get.GetPrice(dataBybite.Currency, api)
 				if price.RetCode == 0 {
 					if trade.Add(api, dataBybite, price) {
 						err = post.PostOrder(dataBybite.Currency, api, &trade)

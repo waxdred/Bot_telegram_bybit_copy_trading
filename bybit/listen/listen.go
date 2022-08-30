@@ -20,7 +20,8 @@ func GetPosition(api env.Env, trade *bybit.Trades) (get.Position, error) {
 	}
 	params["sign"] = sign.GetSigned(params, api.Api_secret)
 	url := fmt.Sprint(
-		"https://api-testnet.bybit.com/private/linear/position/list?api_key=",
+		api.Url,
+		"/private/linear/position/list?api_key=",
 		params["api_key"],
 		"&timestamp=",
 		params["timestamp"],
@@ -41,11 +42,10 @@ func GetPosition(api env.Env, trade *bybit.Trades) (get.Position, error) {
 func GetPositionOrder(api env.Env, trade *bybit.Trades) {
 	for ok := true; ok; {
 		time.Sleep(10 * time.Second)
-		pos, err := GetPosition(api, trade)
+		_, err := GetPosition(api, trade)
 		if err != nil {
 			log.Println(err)
 		}
 		log.Printf("Print Position")
-		log.Println(print.PrettyPrint(pos))
 	}
 }
