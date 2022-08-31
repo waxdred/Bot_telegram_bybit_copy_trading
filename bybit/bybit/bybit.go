@@ -11,7 +11,41 @@ import (
 	"strconv"
 )
 
-type Trades []Trade
+type (
+	Trades []Trade
+)
+
+func (t *Bot) NewBot(trade *Trades, debeug bool) {
+	elem := Bot{
+		Trades: trade,
+		Active: nil,
+		Debeug: debeug,
+	}
+	*t = elem
+}
+
+func (t Bot) GetActive() []string {
+	return t.Active
+}
+
+func (t *Bot) AddActive(symbol string) {
+	ls := (*t).Active
+
+	ls = append(ls, symbol)
+	(*t).Active = ls
+}
+
+func (t *Bot) Delete(symbol string) {
+	var tmp []string
+	ls := (*t).Active
+
+	for i := 0; i < len(ls); i++ {
+		if symbol != ls[i] {
+			tmp = append(tmp, ls[i])
+		}
+	}
+	(*t).Active = tmp
+}
 
 func RoundFloat(val float64, precision uint) string {
 	ratio := math.Pow(10, float64(precision))
@@ -87,6 +121,7 @@ func (t *Trades) Add(api env.Env, data telegram.Data, price get.Price) bool {
 		SymbolPrice: price.Result[0].BidPrice,
 		Wallet:      fmt.Sprint(RoundFloat(available, 4)),
 		Entry:       data.Entry,
+		Leverage:    data.Level,
 		Tp1Order:    RoundFloat((available*50/100)/prices, 4),
 		Tp2Order:    RoundFloat((available*25/100)/prices, 4),
 		Tp3Order:    RoundFloat((available*15/100)/prices, 4),
@@ -194,6 +229,14 @@ func (t *Trades) GetTp1Order(symbol string) string {
 	return ""
 }
 
+func (t *Trades) GetLeverage(symbol string) string {
+	ret := GetTrade(symbol, t)
+	if ret != nil {
+		return ret.Leverage
+	}
+	return ""
+}
+
 func (t *Trades) GetTp2Order(symbol string) string {
 	ret := GetTrade(symbol, t)
 	if ret != nil {
@@ -229,7 +272,7 @@ func (t *Trades) GetTp2(symbol string) string {
 func (t *Trades) GetTp3(symbol string) string {
 	ret := GetTrade(symbol, t)
 	if ret != nil {
-		return ret.Tp2
+		return ret.Tp3
 	}
 	return ""
 }

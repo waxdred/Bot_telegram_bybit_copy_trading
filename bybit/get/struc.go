@@ -74,29 +74,29 @@ type Position struct {
 		Symbol              string  `json:"symbol"`
 		Side                string  `json:"side"`
 		Size                int     `json:"size"`
-		PositionValue       float64 `json:"position_value"`
-		EntryPrice          float64 `json:"entry_price"`
-		LiqPrice            float64 `json:"liq_price"`
-		BustPrice           float64 `json:"bust_price"`
+		PositionValue       int     `json:"position_value"`
+		EntryPrice          int     `json:"entry_price"`
+		LiqPrice            int     `json:"liq_price"`
+		BustPrice           int     `json:"bust_price"`
 		Leverage            int     `json:"leverage"`
 		AutoAddMargin       int     `json:"auto_add_margin"`
 		IsIsolated          bool    `json:"is_isolated"`
-		PositionMargin      float64 `json:"position_margin"`
-		OccClosingFee       float64 `json:"occ_closing_fee"`
+		PositionMargin      int     `json:"position_margin"`
+		OccClosingFee       int     `json:"occ_closing_fee"`
 		RealisedPnl         int     `json:"realised_pnl"`
 		CumRealisedPnl      float64 `json:"cum_realised_pnl"`
 		FreeQty             int     `json:"free_qty"`
 		TpSlMode            string  `json:"tp_sl_mode"`
-		UnrealisedPnl       float64 `json:"unrealised_pnl"`
+		UnrealisedPnl       int     `json:"unrealised_pnl"`
 		DeleverageIndicator int     `json:"deleverage_indicator"`
 		RiskID              int     `json:"risk_id"`
-		StopLoss            float64 `json:"stop_loss"`
-		TakeProfit          float64 `json:"take_profit"`
+		StopLoss            int     `json:"stop_loss"`
+		TakeProfit          int     `json:"take_profit"`
 		TrailingStop        int     `json:"trailing_stop"`
-		TpTriggerBy         int     `json:"tp_trigger_by"`
-		SlTriggerBy         int     `json:"sl_trigger_by"`
 		PositionIdx         int     `json:"position_idx"`
 		Mode                string  `json:"mode"`
+		TpTriggerBy         int     `json:"tp_trigger_by,omitempty"`
+		SlTriggerBy         int     `json:"sl_trigger_by,omitempty"`
 	} `json:"result"`
 	TimeNow          string `json:"time_now"`
 	RateLimitStatus  int    `json:"rate_limit_status"`

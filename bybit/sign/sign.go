@@ -41,7 +41,8 @@ func GetSignedinter(params map[string]interface{}, key string) string {
 		} else if params[k] == false {
 			_val += k + "=" + "false" + "&"
 		} else {
-			_val += k + "=" + params[k].(string) + "&"
+			str := fmt.Sprintf("%v", params[k])
+			_val += k + "=" + str + "&"
 		}
 	}
 	_val = _val[0 : len(_val)-1]

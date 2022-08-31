@@ -5,7 +5,6 @@ import (
 	"bybit/bybit/get"
 	"bybit/bybit/listen"
 	"bybit/bybit/post"
-	"bybit/bybit/print"
 	"bybit/bybit/telegram"
 	"bybit/env"
 	"log"
@@ -13,11 +12,54 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades, api env.Env) {
+	for update := range updates {
+		if update.ChannelPost != nil {
+			msg := update.ChannelPost.Text
+			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
+			if err == nil && dataBybite.Trade {
+				price := get.GetPrice(dataBybite.Currency, api)
+				if price.RetCode == 0 {
+					if trade.Add(api, dataBybite, price) {
+						post.PostIsoled(api, dataBybite.Currency, trade, order.Debeug)
+						err = post.PostOrder(dataBybite.Currency, api, trade, order.Debeug)
+						if err != nil {
+							log.Println(err)
+							trade.Delete(dataBybite.Currency)
+						} else {
+							order.AddActive(dataBybite.Currency)
+						}
+					} else {
+						if order.Debeug {
+							log.Printf("You trade already this Symbol")
+						}
+					}
+					if order.Debeug {
+						trade.Print()
+					}
+				}
+			} else if err == nil && dataBybite.Cancel {
+				cancelErr := post.CancelOrder(dataBybite.Currency, api, trade)
+				if cancelErr != nil {
+					log.Println(cancelErr)
+				} else if order.Debeug {
+					trade.Delete(dataBybite.Currency)
+					order.Delete(dataBybite.Currency)
+				}
+			} else if order.Debeug {
+				log.Printf("Error Parsing")
+			}
+		}
+	}
+}
+
 func main() {
 	var api env.Env
+	var order bybit.Bot
 	var trade bybit.Trades
-	// var trade map[string]bybit.Trade
 
+	// for show debeug set at true
+	order.NewBot(&trade, true)
 	err := env.LoadEnv(&api)
 	if err != nil {
 		log.Fatalf("Error cannot Read file .env")
@@ -36,33 +78,6 @@ func main() {
 	u.Timeout = 60
 
 	updates := botapi.GetUpdatesChan(u)
-
-	go listen.GetPosition(api, &trade)
-
-	for update := range updates {
-		if update.ChannelPost != nil {
-			msg := update.ChannelPost.Text
-			dataBybite, err := telegram.ParseMsg(msg)
-			if err == nil && dataBybite.Trade {
-				price := get.GetPrice(dataBybite.Currency, api)
-				if price.RetCode == 0 {
-					if trade.Add(api, dataBybite, price) {
-						err = post.PostOrder(dataBybite.Currency, api, &trade)
-						if err != nil {
-							log.Println(err)
-						}
-					} else {
-						log.Printf("You trade already this Symbol")
-					}
-					trade.Print()
-				}
-			} else if err == nil && dataBybite.Cancel {
-				post.CancelOrder(dataBybite.Currency, api, &trade)
-				log.Printf("Cancel: %s", dataBybite.Currency)
-				log.Println(print.PrettyPrint(trade))
-			} else {
-				log.Printf("Error Parsing")
-			}
-		}
-	}
+	go listen.GetPositionOrder(api, &trade, &order)
+	run(updates, &order, &trade, api)
 }

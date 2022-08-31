@@ -7,34 +7,36 @@ import (
 	"bybit/env"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 )
 
-func PostOrder(symbol string, api env.Env, trade *bybit.Trades) error {
+func PostOrder(symbol string, api env.Env, trade *bybit.Trades, debug bool) error {
 	params := map[string]interface{}{
 		"api_key":          api.Api,
 		"side":             trade.GetType(symbol),
 		"symbol":           symbol,
 		"order_type":       "Limit",
-		"price":            trade.GetSymbolPrice(symbol),
+		"price":            trade.GetEntry(symbol),
 		"time_in_force":    "GoodTillCancel",
 		"reduce_only":      false,
 		"close_on_trigger": false,
 		"stop_loss":        trade.GetSl(symbol),
 	}
 	// tp1
-	_, err := sendPost(params, trade.GetTp1(symbol), api, trade, trade.GetTp1Order(symbol))
+	_, err := sendPost(params, trade.GetTp1(symbol), api, trade, trade.GetTp1Order(symbol), debug)
 	if err != nil {
 		return err
 	}
 	// tp2
-	_, err = sendPost(params, trade.GetTp2(symbol), api, trade, trade.GetTp2Order(symbol))
+	_, err = sendPost(params, trade.GetTp2(symbol), api, trade, trade.GetTp2Order(symbol), debug)
 	if err != nil {
 		return err
 	}
 	// tp3
-	_, err = sendPost(params, trade.GetTp3(symbol), api, trade, trade.GetTp3Order(symbol))
+	_, err = sendPost(params, trade.GetTp3(symbol), api, trade, trade.GetTp3Order(symbol), debug)
 	if err != nil {
 		return err
 	}
@@ -47,6 +49,7 @@ func sendPost(
 	api env.Env,
 	trade *bybit.Trades,
 	order string,
+	debug bool,
 ) (*http.Response, error) {
 	var res Post
 
@@ -58,7 +61,9 @@ func sendPost(
 	if err != nil {
 		return nil, err
 	}
-	println(print.PrettyPrint(params))
+	if debug {
+		println(print.PrettyPrint(params))
+	}
 	url := fmt.Sprint(api.Url, "/private/linear/order/create")
 	req, err := http.Post(
 		url,
@@ -69,8 +74,13 @@ func sendPost(
 		return req, err
 	}
 	json.NewDecoder(req.Body).Decode(&res)
+	if res.RetCode != 0 {
+		return nil, errors.New(res.RetMsg)
+	}
+	if debug {
+		log.Println(print.PrettyPrint(res))
+	}
 	trade.SetId(params["symbol"].(string), res.Result.OrderID)
-	println(print.PrettyPrint(res))
 	delete(params, "sign")
 	delete(params, "take_profit")
 	delete(params, "qty")
@@ -78,17 +88,49 @@ func sendPost(
 	return req, nil
 }
 
+func PostIsoled(api env.Env, symbol string, trade *bybit.Trades, debug bool) error {
+	var isolated Isolated
+	params := map[string]interface{}{
+		"api_key":       api.Api,
+		"symbol":        symbol,
+		"is_isolated":   true,
+		"buy_leverage":  10,
+		"sell_leverage": 10,
+		"timestamp":     print.GetTimestamp(),
+	}
+	params["sign"] = sign.GetSignedinter(params, api.Api_secret)
+	json_data, err := json.Marshal(params)
+	if err != nil {
+		return err
+	}
+	url := fmt.Sprint(api.Url, "/private/linear/position/switch-isolated")
+	req, err := http.Post(
+		url,
+		"application/json",
+		bytes.NewBuffer(json_data))
+	if err != nil {
+		return err
+	}
+	json.NewDecoder(req.Body).Decode(&isolated)
+	if debug {
+		log.Printf("post PostIsoled")
+		log.Println(print.PrettyPrint(isolated))
+	}
+	log.Printf("Isolated active: %d", params["buy_leverage"])
+	return nil
+}
+
 func CancelOrder(symbol string, api env.Env, trade *bybit.Trades) error {
 	params := map[string]string{
 		"api_key": api.Api,
 		"symbol":  symbol,
 	}
-
 	err := PostCancelOrder(params, api)
 	if err != nil {
 		return err
 	}
 	trade.Delete(symbol)
+	log.Printf("Cancel order success: %s", symbol)
 	return nil
 }
 
@@ -102,31 +144,42 @@ func PostCancelOrder(params map[string]string, api env.Env) error {
 		return err
 	}
 	delete(params, "sign")
+	url := fmt.Sprint(api.Url, "/private/linear/order/cancel-all")
 	req, err := http.Post(
-		"https://api-testnet.bybit.com/private/linear/order/cancel-all",
+		url,
 		"application/json",
 		bytes.NewBuffer(json_data))
 	if err != nil {
 		return err
 	}
 	json.NewDecoder(req.Body).Decode(&cancel)
+	if cancel.RetCode != 0 {
+		return errors.New(cancel.RetMsg)
+	}
 	return nil
 }
 
-// func ChangeLs(api env.Env, params map[string]interface{}) error {
-// 	params["sign"] = sign.GetSignedinter(params, api.Api_secret)
-// 	json_data, err := json.Marshal(params)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	_, err = http.Post(
-// 		"https://api-testnet.bybit.com/private/linear/position/trading-stop",
-// 		"application/json",
-// 		bytes.NewBuffer(json_data),
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// json.NewDecoder(req.Body).Decode(&res)
-// 	return nil
-// }
+func ChangeLs(api env.Env, symbol string, sl string) error {
+	params := map[string]string{
+		"api_key":   api.Api,
+		"symbol":    symbol,
+		"stop_loss": sl,
+		"timestamp": print.GetTimestamp(),
+	}
+	params["sign"] = sign.GetSigned(params, api.Api_secret)
+	json_data, err := json.Marshal(params)
+	if err != nil {
+		return err
+	}
+	url := fmt.Sprint(api.Url, "/private/linear/position/trading-stop")
+	_, err = http.Post(
+		url,
+		"application/json",
+		bytes.NewBuffer(json_data),
+	)
+	if err != nil {
+		return err
+	}
+	log.Printf("Change ls: %s", symbol)
+	return nil
+}

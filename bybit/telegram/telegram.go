@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"bybit/bybit/print"
 	"errors"
 	"log"
 	"strings"
@@ -21,7 +22,7 @@ type Data struct {
 	Trade    bool
 }
 
-func ParseMsg(msg string) (Data, error) {
+func ParseMsg(msg string, debug bool) (Data, error) {
 	var data Data
 
 	data.Cancel = false
@@ -33,6 +34,9 @@ func ParseMsg(msg string) (Data, error) {
 			data.Currency = msg[pos+1:]
 			data.Currency = data.Currency[:strings.Index(data.Currency, " ")]
 			data.Currency = strings.Replace(data.Currency, "/", "", 1)
+		}
+		if debug {
+			log.Println(print.PrettyPrint(data))
 		}
 		return data, nil
 	}
@@ -49,7 +53,6 @@ func ParseMsg(msg string) (Data, error) {
 			data.Currency = strings.Replace(data.Currency, " ", "", 1)
 		}
 		if strings.Index(tab[i], "nter ") > 0 {
-			log.Printf("enter")
 			data.Entry = tab[i][strings.Index(tab[i], ": ")+2:]
 		}
 		if strings.Index(tab[i], "BUY") > 0 {
@@ -72,6 +75,9 @@ func ParseMsg(msg string) (Data, error) {
 		} else if strings.Index(tab[i], "order or a") > 0 {
 			data.Order = tab[i][strings.Index(tab[i], "order or a ")+len("order or a ") : strings.Index(tab[i], " order")]
 		}
+	}
+	if debug {
+		log.Println(print.PrettyPrint(data))
 	}
 	return data, nil
 }
