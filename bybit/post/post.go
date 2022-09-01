@@ -2,6 +2,7 @@ package post
 
 import (
 	"bybit/bybit/bybit"
+	"bybit/bybit/get"
 	"bybit/bybit/print"
 	"bybit/bybit/sign"
 	"bybit/env"
@@ -11,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func PostOrder(symbol string, api env.Env, trade *bybit.Trades, debug bool) error {
@@ -157,6 +159,19 @@ func PostCancelOrder(params map[string]string, api env.Env) error {
 		return errors.New(cancel.RetMsg)
 	}
 	return nil
+}
+
+func CancelBySl(price get.Price, trade *bybit.Trade) string {
+	if trade.Type == "Buy" {
+		val, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
+		val = (val * 0.01 / 100) + val
+		return fmt.Sprint("%4.f", val)
+	} else if trade.Type == "Sell" {
+		val, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
+		val = (val * 0.01 / 100) - val
+		return fmt.Sprint("%4.f", val)
+	}
+	return ""
 }
 
 func ChangeLs(api env.Env, symbol string, sl string) error {

@@ -14,6 +14,7 @@ import (
 
 func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades, api env.Env) {
 	for update := range updates {
+		log.Println(update.ChannelPost.From)
 		if update.ChannelPost != nil {
 			msg := update.ChannelPost.Text
 			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
