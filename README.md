@@ -5,6 +5,7 @@
 #### * Check the price of currency
 #### * Change stop lost when tp
 #### * Order can be cancel but not the position yet
+
 # Environment Variables
 
 To run this project, you will need to add the following environment variables to your .env file
@@ -13,13 +14,11 @@ To run this project, you will need to add the following environment variables to
 ```bash
 API_TELEGRAM = "api of your bot telegram"
 
-
 # api bybit
 API = "bybit api"
 API_SECRET = "bybit api_secret"
 # need stay in testnet 
 URL = "https://api-testnet.bybit.com"
-
 
 #api telegram app
 API_ID = "api_id"
@@ -32,11 +31,14 @@ MY_CHANNEL = "id channel"
 ID_CHANNEL = "id channel"
 ```
 
-
-
 # Installation 
 
 ### Please setting your .env
+#### First run confirmation telegram api 
+```bash
+  make init
+```
+
 #### Run app
 ```bash
   make
