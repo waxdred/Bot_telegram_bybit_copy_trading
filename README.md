@@ -12,6 +12,10 @@ To run this project, you will need to add the following environment variables to
 
 ## .env file
 ```bash
+touch srcs/.env
+```
+### add var
+```bash
 API_TELEGRAM = "api of your bot telegram"
 
 # api bybit
