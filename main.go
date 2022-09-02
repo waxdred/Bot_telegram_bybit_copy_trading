@@ -8,7 +8,6 @@ import (
 	"bybit/bybit/telegram"
 	"bybit/env"
 	"log"
-	"os/exec"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -56,11 +55,6 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 	}
 }
 
-func runPython() {
-	out := exec.Command("python3 ./python/telegram.py")
-	log.Println(out.Output)
-}
-
 func main() {
 	var api env.Env
 	var order bybit.Bot
@@ -86,7 +80,7 @@ func main() {
 	u.Timeout = 60
 
 	updates := botapi.GetUpdatesChan(u)
-	// go runPython()
+
 	go listen.GetPositionOrder(api, &trade, &order)
 	run(updates, &order, &trade, api)
 }
