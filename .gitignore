@@ -1,1 +1,5 @@
 .env
+config
+go.mod
+go.sum
+__python__
