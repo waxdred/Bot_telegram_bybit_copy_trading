@@ -26,10 +26,10 @@ API_ID = "api_id"
 API_HASH = "api_hash"
 
 # your channel id where you have your bot for send to bybirt
-MY_CHANNEL = 1708036114
+MY_CHANNEL = "id channel"
 
 # id of the channel you want listen the signal work with only one for the moment
-ID_CHANNEL = 1608731983
+ID_CHANNEL = "id channel"
 ```
 
 
