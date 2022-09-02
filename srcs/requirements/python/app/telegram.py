@@ -1,8 +1,9 @@
 from telethon import TelegramClient
 from dotenv import load_dotenv
 from pathlib import Path
-
 import os
+import sys
+
 
 from telethon.tl.custom import message
 
@@ -11,6 +12,8 @@ class Telegram():
     def __init__(self):
         self.HOST = '127.0.0.1'
         self.PORT = 30000
+        if len(sys.argv) > 1:
+            load_dotenv("../.env")
         self.api_id = os.getenv('API_ID')
         self.api_hash = os.getenv('API_HASH')
         self.id_channel = os.getenv('ID_CHANNEL')
@@ -38,9 +41,12 @@ class Telegram():
         return t
 
     def start(self):
+
         with self.client:
             # Register the update handler so that it gets called
             t = self.client.add_event_handler(self.handler)
+            if len(sys.argv) > 1:
+                exit(0)
             print(t)
         
             # Run the client until Ctrl+C is pressed, or the client disconnects
