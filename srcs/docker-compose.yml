@@ -1,0 +1,40 @@
+version: '3,8'
+
+services:
+  ###############################
+  #           bot trading       #
+  ###############################
+    go:
+        image: go
+        restart: always
+        build:
+            context: ./requirements/go/
+            dockerfile: Dockerfile 
+        environment:
+            - API=${API}
+            - API_SECRET=${API_SECRET}
+            - API_TELEGRAM=${API_TELEGRAM}
+            - URL=${URL}
+        networks:
+             bot:
+
+  ###############################
+  #           python bot        #
+  ###############################
+    python:
+        image: python
+        restart: always
+        build:
+            context: ./requirements/python/
+            dockerfile: Dockerfile 
+        environment:
+          - API_ID=${API_ID}
+          - API_HASH=${API_HASH}
+          - ID_CHANNEL=${ID_CHANNEL} 
+          - MY_CHANNEL=${MY_CHANNEL} 
+        networks:
+             bot:
+
+networks:
+     bot:
+        driver: bridge
