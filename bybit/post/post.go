@@ -165,11 +165,11 @@ func CancelBySl(price get.Price, trade *bybit.Trade) string {
 	if trade.Type == "Buy" {
 		val, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
 		val = (val * 0.01 / 100) + val
-		return fmt.Sprint("%4.f", val)
+		return fmt.Sprint("%4.v", val)
 	} else if trade.Type == "Sell" {
 		val, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
 		val = (val * 0.01 / 100) - val
-		return fmt.Sprint("%4.f", val)
+		return fmt.Sprint("%4.v", val)
 	}
 	return ""
 }
