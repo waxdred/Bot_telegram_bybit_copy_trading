@@ -131,7 +131,6 @@ func CancelOrder(symbol string, api env.Env, trade *bybit.Trades) error {
 	if err != nil {
 		return err
 	}
-	trade.Delete(symbol)
 	log.Printf("Cancel order success: %s", symbol)
 	return nil
 }
@@ -155,6 +154,7 @@ func PostCancelOrder(params map[string]string, api env.Env) error {
 		return err
 	}
 	json.NewDecoder(req.Body).Decode(&cancel)
+	log.Println(print.PrettyPrint(cancel))
 	if cancel.RetCode != 0 {
 		return errors.New(cancel.RetMsg)
 	}
@@ -163,21 +163,24 @@ func PostCancelOrder(params map[string]string, api env.Env) error {
 
 func CancelBySl(price get.Price, trade *bybit.Trade) string {
 	if trade.Type == "Buy" {
-		val, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
-		val = (val * 0.01 / 100) + val
-		return fmt.Sprintf("%4.f", val)
+		log.Println(print.PrettyPrint(price))
+		val, _ := strconv.ParseFloat(price.Result[0].BidPrice, 4)
+		val = val - (val * 0.01)
+		return fmt.Sprintf("%.4f", val)
 	} else if trade.Type == "Sell" {
 		val, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
-		val = (val * 0.01 / 100) - val
-		return fmt.Sprintf("%4.f", val)
+		val = val - (val * 0.01)
+		return fmt.Sprintf("%.4f", val)
 	}
 	return ""
 }
 
-func ChangeLs(api env.Env, symbol string, sl string) error {
+func ChangeLs(api env.Env, symbol string, sl string, side string) error {
+	var stop StopLoss
 	params := map[string]string{
 		"api_key":   api.Api,
 		"symbol":    symbol,
+		"side":      side,
 		"stop_loss": sl,
 		"timestamp": print.GetTimestamp(),
 	}
@@ -187,7 +190,7 @@ func ChangeLs(api env.Env, symbol string, sl string) error {
 		return err
 	}
 	url := fmt.Sprint(api.Url, "/private/linear/position/trading-stop")
-	_, err = http.Post(
+	req, err := http.Post(
 		url,
 		"application/json",
 		bytes.NewBuffer(json_data),
@@ -195,6 +198,6 @@ func ChangeLs(api env.Env, symbol string, sl string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Change ls: %s", symbol)
+	json.NewDecoder(req.Body).Decode(&stop)
 	return nil
 }

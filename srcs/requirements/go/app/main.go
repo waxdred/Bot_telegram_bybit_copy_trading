@@ -19,6 +19,7 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
 			if err == nil && dataBybite.Trade {
 				price := get.GetPrice(dataBybite.Currency, api)
+				log.Println(price)
 				if price.RetCode == 0 && price.Result[0].BidPrice != "" {
 					if trade.Add(api, dataBybite, price) {
 						post.PostIsoled(api, dataBybite.Currency, trade, order.Debeug)
@@ -42,26 +43,27 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 				}
 			} else if err == nil && dataBybite.Cancel {
 				cancelErr := post.CancelOrder(dataBybite.Currency, api, trade)
+				log.Println("read trade pos")
 				if cancelErr != nil {
-					trd := bybit.GetTrade(dataBybite.Currency, trade)
-					if trd != nil {
-						sl := post.CancelBySl(get.GetPrice(dataBybite.Currency, api), trd)
-						if sl != "" {
-							lsErr := post.ChangeLs(api, dataBybite.Currency, sl)
-							if lsErr != nil {
-								log.Println(lsErr)
-							} else {
-								log.Printf("Cancel Position ok")
-								order.Delete(dataBybite.Currency)
-								trade.Delete(dataBybite.Currency)
-							}
+					log.Println(cancelErr)
+				}
+				trd := bybit.GetTrade(dataBybite.Currency, trade)
+				if trd != nil {
+					px := get.GetPrice(dataBybite.Currency, api)
+					log.Println(px)
+					sl := post.CancelBySl(px, trd)
+					if sl != "" {
+						lsErr := post.ChangeLs(api, dataBybite.Currency, sl, trd.Type)
+						if lsErr != nil {
+							log.Println(lsErr)
+						} else {
+							log.Printf("Cancel Position ok")
 						}
 					}
 					log.Println(cancelErr)
-				} else {
-					trade.Delete(dataBybite.Currency)
-					order.Delete(dataBybite.Currency)
 				}
+				trade.Delete(dataBybite.Currency)
+				order.Delete(dataBybite.Currency)
 			} else if order.Debeug {
 				log.Printf("Error Parsing")
 			}

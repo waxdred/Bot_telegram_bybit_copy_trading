@@ -50,10 +50,10 @@ func BuyTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) er
 		order.Delete(symbol)
 		log.Printf("%s: All take-profit targets achieved 😎", symbol)
 	} else if price.Result[0].LastPrice >= trade.GetTp2(symbol) {
-		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol), trade.GetType(symbol))
 		log.Printf("%s: Tp2 😎", symbol)
 	} else if price.Result[0].LastPrice >= trade.GetTp1(symbol) {
-		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol), trade.GetType(symbol))
 		log.Printf("%s: Tp1 😎", symbol)
 	}
 	if err != nil {
@@ -72,10 +72,10 @@ func SellTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) e
 		order.Delete(symbol)
 		log.Printf("%s: All take-profit targets achieved 😎", symbol)
 	} else if price.Result[0].LastPrice <= trade.GetTp2(symbol) {
-		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol), trade.GetType(symbol))
 		log.Printf("%s: Tp2 😎", symbol)
 	} else if price.Result[0].LastPrice <= trade.GetTp1(symbol) {
-		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol), trade.GetType(symbol))
 		log.Printf("%s: Tp1 😎", symbol)
 	}
 	if err != nil {
