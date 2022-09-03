@@ -1,10 +1,9 @@
 package get
 
 import (
-	// "bybit/bybit/bybit"
-	"bybit/bybit/print"
-	"bybit/bybit/sign"
-	"bybit/env"
+	"bot/bybits/print"
+	"bot/bybits/sign"
+	"bot/env"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"

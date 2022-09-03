@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bybit/bybit/bybit"
-	"bybit/bybit/get"
-	"bybit/bybit/listen"
-	"bybit/bybit/post"
-	"bybit/bybit/telegram"
-	"bybit/env"
+	"bot/bybits/bybit"
+	"bot/bybits/get"
+	"bot/bybits/listen"
+	"bot/bybits/post"
+	"bot/bybits/telegram"
+	"bot/env"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -43,8 +43,22 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 			} else if err == nil && dataBybite.Cancel {
 				cancelErr := post.CancelOrder(dataBybite.Currency, api, trade)
 				if cancelErr != nil {
+					trd := bybit.GetTrade(dataBybite.Currency, trade)
+					if trd != nil {
+						sl := post.CancelBySl(get.GetPrice(dataBybite.Currency, api), trd)
+						if sl != "" {
+							lsErr := post.ChangeLs(api, dataBybite.Currency, sl)
+							if lsErr != nil {
+								log.Println(lsErr)
+							} else {
+								log.Printf("Cancel Position ok")
+								order.Delete(dataBybite.Currency)
+								trade.Delete(dataBybite.Currency)
+							}
+						}
+					}
 					log.Println(cancelErr)
-				} else if order.Debeug {
+				} else {
 					trade.Delete(dataBybite.Currency)
 					order.Delete(dataBybite.Currency)
 				}

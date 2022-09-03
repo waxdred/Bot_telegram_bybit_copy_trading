@@ -1,10 +1,10 @@
 package bybit
 
 import (
-	"bybit/bybit/get"
-	"bybit/bybit/print"
-	"bybit/bybit/telegram"
-	"bybit/env"
+	"bot/bybits/get"
+	"bot/bybits/print"
+	"bot/bybits/telegram"
+	"bot/env"
 	"fmt"
 	"log"
 	"math"

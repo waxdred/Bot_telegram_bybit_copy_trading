@@ -1,7 +1,7 @@
 package telegram
 
 import (
-	"bybit/bybit/print"
+	"bot/bybits/print"
 	"errors"
 	"log"
 	"strings"
@@ -20,32 +20,33 @@ type Data struct {
 	Order    string `json:"order"`
 	Cancel   bool
 	Trade    bool
+	Spot     bool
 }
 
-func ParseMsg(msg string, debug bool) (Data, error) {
-	var data Data
-
-	data.Cancel = false
+func SetDataNil(data *Data) {
 	data.Trade = false
-	if strings.Index(msg, "Cancelled") > 0 {
-		pos := strings.Index(msg, "#")
-		if pos > 0 {
-			data.Cancel = true
-			data.Currency = msg[pos+1:]
-			data.Currency = data.Currency[:strings.Index(data.Currency, " ")]
-			data.Currency = strings.Replace(data.Currency, "/", "", 1)
-		}
-		if debug {
-			log.Println(print.PrettyPrint(data))
-		}
-		return data, nil
+	data.Cancel = false
+	data.Spot = false
+}
+
+func CancelParse(msg string, debug bool, data Data) (Data, error) {
+	pos := strings.Index(msg, "#")
+	SetDataNil(&data)
+	if pos > 0 {
+		data.Cancel = true
+		data.Currency = msg[pos+1:]
+		data.Currency = data.Currency[:strings.Index(data.Currency, " ")]
+		data.Currency = strings.Replace(data.Currency, "/", "", 1)
 	}
-	if strings.Index(msg, "TP1") == -1 || strings.Index(msg, "TP2") == -1 {
-		err := errors.New("tp not found")
-		return data, err
+	if debug {
+		log.Println(print.PrettyPrint(data))
 	}
+	return data, nil
+}
+
+func FuturParse(msg string, debug bool, data Data) (Data, error) {
 	tab := strings.Split(msg, "\n")
-	data.Trade = true
+	SetDataNil(&data)
 	for i := range tab {
 		if strings.Index(tab[i], "/") > 0 {
 			data.Currency = strings.Replace(tab[i], "/", "", 1)
@@ -75,9 +76,22 @@ func ParseMsg(msg string, debug bool) (Data, error) {
 		} else if strings.Index(tab[i], "order or a") > 0 {
 			data.Order = tab[i][strings.Index(tab[i], "order or a ")+len("order or a ") : strings.Index(tab[i], " order")]
 		}
+		data.Trade = true
 	}
 	if debug {
 		log.Println(print.PrettyPrint(data))
 	}
 	return data, nil
+}
+
+func ParseMsg(msg string, debug bool) (Data, error) {
+	var data Data
+
+	if strings.Index(msg, "Cancelled") > 0 {
+		return CancelParse(msg, debug, data)
+	}
+	if strings.Index(msg, "TP1") != -1 && strings.Index(msg, "TP2") != -1 && strings.Index(msg, "TP3") != -1 {
+		return FuturParse(msg, debug, data)
+	}
+	return data, errors.New("Error Parsing")
 }

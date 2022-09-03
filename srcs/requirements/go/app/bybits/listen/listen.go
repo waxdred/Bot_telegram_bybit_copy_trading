@@ -1,12 +1,12 @@
 package listen
 
 import (
-	"bybit/bybit/bybit"
-	"bybit/bybit/get"
-	"bybit/bybit/post"
-	"bybit/bybit/print"
-	"bybit/bybit/sign"
-	"bybit/env"
+	"bot/bybits/bybit"
+	"bot/bybits/get"
+	"bot/bybits/post"
+	"bot/bybits/print"
+	"bot/bybits/sign"
+	"bot/env"
 	"encoding/json"
 	"fmt"
 	"log"

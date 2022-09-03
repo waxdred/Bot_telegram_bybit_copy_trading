@@ -1,11 +1,11 @@
 package post
 
 import (
-	"bybit/bybit/bybit"
-	"bybit/bybit/get"
-	"bybit/bybit/print"
-	"bybit/bybit/sign"
-	"bybit/env"
+	"bot/bybits/bybit"
+	"bot/bybits/get"
+	"bot/bybits/print"
+	"bot/bybits/sign"
+	"bot/env"
 	"bytes"
 	"encoding/json"
 	"errors"
