@@ -74,18 +74,20 @@ func main() {
 	var trade bybit.Trades
 
 	// for show debeug set at true
-	order.NewBot(&trade, false)
 	err := env.LoadEnv(&api)
 	if err != nil {
+		log.Println(err)
 		log.Fatalf("Error cannot Read file .env")
 	}
+	log.Println(api)
+	order.NewBot(&trade, api.Debeug)
 	log.Printf("Get api Ok")
 	botapi, err := tgbotapi.NewBotAPI(api.Api_telegram)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	botapi.Debug = false
+	botapi.Debug = api.Debeug
 
 	log.Printf("Authorized on account %s", botapi.Self.UserName)
 

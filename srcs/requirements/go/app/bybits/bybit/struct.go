@@ -21,7 +21,12 @@ type Trade struct {
 }
 
 type Bot struct {
-	Trades *Trades  `json:"trades"`
-	Active []string `json:"active"`
+	Trades *Trades `json:"trades"`
+	Active []Start `json:"active"`
 	Debeug bool
+}
+
+type Start struct {
+	Symbol string
+	Active bool
 }

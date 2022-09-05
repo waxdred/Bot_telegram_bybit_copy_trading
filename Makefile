@@ -3,7 +3,7 @@ NAME = bot
 all:	$(NAME)
 
 $(NAME):
-	docker compose -v -f ./srcs/docker-compose.yml up --force-recreate --build 
+	docker compose -v -f ./srcs/docker-compose.yml up --force-recreate --build
 
 down:
 	docker compose -f ./srcs/docker-compose.yml down

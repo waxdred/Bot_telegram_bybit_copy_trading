@@ -2,14 +2,18 @@
 NAME = bot
 MOD = go.mod
 SUM = go.sum
+
+
 all: $(NAME)
 
 $(NAME): build
 	./${NAME}
 
-build: 
+install: go.mod go.sum 
 	@-go mod init bot
 	@-go mod tidy
+
+build: 
 	@-go build .
 
 fclean:
@@ -17,6 +21,4 @@ fclean:
 	rm ./${SUM}
 	rm ./${NAME}
 
-.PHONY: all fclean
-.SILENT :
 re: fclean all

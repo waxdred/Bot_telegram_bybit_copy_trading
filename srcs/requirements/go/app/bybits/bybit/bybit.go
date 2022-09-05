@@ -24,23 +24,43 @@ func (t *Bot) NewBot(trade *Trades, debeug bool) {
 	*t = elem
 }
 
+func (t *Bot) CheckPositon(pos get.Position) {
+	if pos.Result[0].StopLoss > 0 || pos.Result[1].StopLoss > 0 {
+		for i := 0; i < len((*t).Active); i++ {
+			if (*t).Active[i].Symbol == pos.Result[0].Symbol {
+				(*t).Active[i].Active = true
+			} else {
+				(*t).Active[i].Active = false
+			}
+		}
+	}
+}
+
 func (t Bot) GetActive() []string {
-	return t.Active
+	var tmp []string
+	for i := 0; i < len(t.Active); i++ {
+		tmp = append(tmp, t.Active[i].Symbol)
+	}
+	return tmp
 }
 
 func (t *Bot) AddActive(symbol string) {
 	ls := (*t).Active
+	elem := Start{
+		Symbol: symbol,
+		Active: false,
+	}
 
-	ls = append(ls, symbol)
+	ls = append(ls, elem)
 	(*t).Active = ls
 }
 
 func (t *Bot) Delete(symbol string) {
-	var tmp []string
+	var tmp []Start
 	ls := (*t).Active
 
 	for i := 0; i < len(ls); i++ {
-		if symbol != ls[i] {
+		if symbol != ls[i].Symbol {
 			tmp = append(tmp, ls[i])
 		}
 	}

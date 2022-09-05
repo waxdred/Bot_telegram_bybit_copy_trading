@@ -177,6 +177,9 @@ func CancelBySl(price get.Price, trade *bybit.Trade) string {
 
 func ChangeLs(api env.Env, symbol string, sl string, side string) error {
 	var stop StopLoss
+	log.Println(symbol)
+	log.Println(sl)
+	log.Println(side)
 	params := map[string]string{
 		"api_key":   api.Api,
 		"symbol":    symbol,
@@ -199,5 +202,6 @@ func ChangeLs(api env.Env, symbol string, sl string, side string) error {
 		return err
 	}
 	json.NewDecoder(req.Body).Decode(&stop)
+	log.Println(print.PrettyPrint(stop))
 	return nil
 }
