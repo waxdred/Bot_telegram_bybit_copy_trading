@@ -10,7 +10,6 @@ type Env struct {
 	Api_secret   string
 	Api_telegram string
 	Url          string
-	Debeug       bool
 }
 
 func GetEnv(env *Env) error {
@@ -30,19 +29,6 @@ func GetEnv(env *Env) error {
 	if env.Url == "" {
 		return errors.New("Url not found")
 	}
-	envi := os.Getenv("DEBEUG")
-	if envi == "" {
-		env.Debeug = false
-	} else {
-		if envi == "true" {
-			env.Debeug = true
-		} else if envi == "false" {
-			env.Debeug = false
-		} else {
-			return errors.New("Error setting Debeug")
-		}
-	}
-	env.Debeug = false
 	return nil
 }
 

@@ -120,12 +120,12 @@ func GetPositionOrder(api env.Env, trade *bybit.Trades, order *bybit.Bot) {
 		for i := 0; i < len((*order).Active); i++ {
 			pos, _ := GetPosition(api, trade, (*order).Active[i].Symbol)
 			order.CheckPositon(pos)
-			if trade.GetType((*order).Active[i].Symbol) == "Sell" {
+			if trade.GetType((*order).Active[i].Symbol) == "Sell" && (*order).Active[i].Active == true {
 				err := SellTp(api, trade, (*order).Active[i].Symbol, order)
 				if err != nil {
 					log.Println(err)
 				}
-			} else if trade.GetType((*order).Active[i].Symbol) == "Buy" {
+			} else if trade.GetType((*order).Active[i].Symbol) == "Buy" && (*order).Active[i].Active == true{
 				err := BuyTp(api, trade, (*order).Active[i].Symbol, order)
 				if err != nil {
 					log.Println(err)
