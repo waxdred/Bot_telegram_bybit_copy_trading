@@ -6,7 +6,7 @@ SUM = go.sum
 
 all: $(NAME)
 
-$(NAME): build
+$(NAME): install build
 	./${NAME}
 
 install:
