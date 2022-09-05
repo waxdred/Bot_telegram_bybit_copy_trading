@@ -9,7 +9,7 @@ all: $(NAME)
 $(NAME): build
 	./${NAME}
 
-install: go.mod go.sum 
+install:
 	@-go mod init bot
 	@-go mod tidy
 

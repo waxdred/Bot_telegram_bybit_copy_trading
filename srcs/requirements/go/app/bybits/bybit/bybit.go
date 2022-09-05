@@ -84,6 +84,14 @@ func (t *Trades) SetId(symbol string, id string) {
 	}
 }
 
+func (t *Trades) SetSl(symbol string, sl string) {
+	for i := 0; i < len(*t); i++ {
+		if (*t)[i].Symbol == symbol {
+			(*t)[i].Sl = sl
+		}
+	}
+}
+
 func (t *Trades) GetSymbolOrder() []string {
 	ls := *t
 	var ret []string
