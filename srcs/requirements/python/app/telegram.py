@@ -10,14 +10,14 @@ from telethon.tl.custom import message
 
 class Telegram():
     def __init__(self):
-        self.HOST = '127.0.0.1'
-        self.PORT = 30000
         if len(sys.argv) > 1:
-            load_dotenv("../.env")
+            load_dotenv("./.env")
         self.api_id = os.getenv('API_ID')
         self.api_hash = os.getenv('API_HASH')
         self.id_channel = os.getenv('ID_CHANNEL')
         self.my_channel = os.getenv('MY_CHANNEL')
+        self.HOST = '127.0.0.1'
+        self.PORT = 30000
         self.session = "trading bot"
         self.proxy = None
         self.msg = ""
@@ -25,6 +25,7 @@ class Telegram():
 
     async def handler(self, update):
         t = str(update)
+        print(t)
         pos = t.find(str(self.id_channel))
         t = t[pos:]
         pos = t.find("message=")
@@ -32,8 +33,6 @@ class Telegram():
             t = t[pos + len("message= "):]
             pos = t.find("'")
             if pos != -1:
-                if os.path.exists("_log"):
-                    os.remove("_log")
                 t = t[:pos]
                 t = t.replace("\\n", "\n", -1)
                 print(t)
@@ -41,9 +40,8 @@ class Telegram():
         return t
 
     def start(self):
-
-        with self.client:
             # Register the update handler so that it gets called
+        with self.client:
             t = self.client.add_event_handler(self.handler)
             if len(sys.argv) > 1:
                 exit(0)
@@ -57,3 +55,4 @@ if __name__ == '__main__':
     telegram = Telegram()
     print("Class init....")
     telegram.start()
+    

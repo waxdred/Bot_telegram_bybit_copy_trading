@@ -80,14 +80,14 @@ func main() {
 		log.Fatalf("Error cannot Read file .env")
 	}
 	log.Println(api)
-	order.NewBot(&trade, true)
+	order.NewBot(&trade, false)
 	log.Printf("Get api Ok")
 	botapi, err := tgbotapi.NewBotAPI(api.Api_telegram)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	botapi.Debug = api.Debeug
+	botapi.Debug = order.Debeug
 
 	log.Printf("Authorized on account %s", botapi.Self.UserName)
 
