@@ -34,6 +34,7 @@ services:
           - API_HASH=${API_HASH}
           - ID_CHANNEL=${ID_CHANNEL} 
           - MY_CHANNEL=${MY_CHANNEL} 
+          - BOT_NAME=${BOT_NAME} 
         ports:
           - "40000:40000"
         networks:

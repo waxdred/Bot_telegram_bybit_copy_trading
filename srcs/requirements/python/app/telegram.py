@@ -1,6 +1,7 @@
 from telethon import TelegramClient
 from dotenv import load_dotenv
 import os
+import sys
 
 
 from telethon.tl.custom import message
