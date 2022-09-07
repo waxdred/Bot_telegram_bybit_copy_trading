@@ -15,6 +15,8 @@ services:
             - API_SECRET=${API_SECRET}
             - API_TELEGRAM=${API_TELEGRAM}
             - URL=${URL}
+        ports:
+          - "30000:30000"
         networks:
              bot:
 
@@ -32,6 +34,8 @@ services:
           - API_HASH=${API_HASH}
           - ID_CHANNEL=${ID_CHANNEL} 
           - MY_CHANNEL=${MY_CHANNEL} 
+        ports:
+          - "40000:40000"
         networks:
              bot:
 

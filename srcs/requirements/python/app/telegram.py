@@ -1,23 +1,21 @@
 from telethon import TelegramClient
 from dotenv import load_dotenv
-from pathlib import Path
 import os
-import sys
 
 
 from telethon.tl.custom import message
 
 
+
+
 class Telegram():
     def __init__(self):
         if len(sys.argv) > 1:
-            load_dotenv("./.env")
+            load_dotenv("../.env")
         self.api_id = os.getenv('API_ID')
         self.api_hash = os.getenv('API_HASH')
         self.id_channel = os.getenv('ID_CHANNEL')
-        self.my_channel = os.getenv('MY_CHANNEL')
-        self.HOST = '127.0.0.1'
-        self.PORT = 30000
+        self.bot_name = os.getenv('BOT_NAME')
         self.session = "trading bot"
         self.proxy = None
         self.msg = ""
@@ -25,7 +23,6 @@ class Telegram():
 
     async def handler(self, update):
         t = str(update)
-        print(t)
         pos = t.find(str(self.id_channel))
         t = t[pos:]
         pos = t.find("message=")
@@ -36,7 +33,7 @@ class Telegram():
                 t = t[:pos]
                 t = t.replace("\\n", "\n", -1)
                 print(t)
-                await self.client.send_message(entity=int(self.my_channel), message=t)
+                await self.client.send_message(self.bot_name ,message=t)
         return t
 
     def start(self):
