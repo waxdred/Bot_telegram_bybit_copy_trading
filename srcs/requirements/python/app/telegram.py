@@ -15,6 +15,7 @@ class Telegram():
         self.api_id = os.getenv('API_ID')
         self.api_hash = os.getenv('API_HASH')
         self.id_channel = os.getenv('ID_CHANNEL')
+        self.my_channel = os.getenv('MY_CHANNEL')
         self.bot_name = os.getenv('BOT_NAME')
         self.session = "trading bot"
         self.proxy = None
@@ -23,7 +24,7 @@ class Telegram():
 
     async def handler(self, update):
         t = str(update)
-        pos = t.find(str(self.id_channel))
+        pos = t.find(str(self.my_channel))
         t = t[pos:]
         pos = t.find("message=")
         if pos != -1:
