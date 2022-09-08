@@ -7,15 +7,30 @@ import (
 	"bot/bybits/post"
 	"bot/bybits/telegram"
 	"bot/env"
+	"fmt"
 	"log"
+	"net/http"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades, api env.Env) {
+func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades, api env.Env, botapi *tgbotapi.BotAPI) {
 	for update := range updates {
-		if update.ChannelPost != nil {
+		if update.Message != nil {
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			msg := update.Message.Text
+			url := fmt.Sprint(
+				"https://api.telegram.org/bot",
+				api.Api_telegram,
+				"/sendMessage?text=",
+				msg,
+				"&chat_id=@trading_bybit_wax",
+			)
+			http.Get(url)
+
+		} else if update.ChannelPost != nil {
 			msg := update.ChannelPost.Text
+			log.Println(msg)
 			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
 			if err == nil && dataBybite.Trade {
 				price := get.GetPrice(dataBybite.Currency, api)
@@ -97,5 +112,5 @@ func main() {
 	updates := botapi.GetUpdatesChan(u)
 
 	go listen.GetPositionOrder(api, &trade, &order)
-	run(updates, &order, &trade, api)
+	run(updates, &order, &trade, api, botapi)
 }

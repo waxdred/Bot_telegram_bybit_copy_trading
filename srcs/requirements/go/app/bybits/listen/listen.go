@@ -12,6 +12,8 @@ import (
 	"log"
 	"strconv"
 	"time"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func GetPosition(api env.Env, trade *bybit.Trades, symbol string) (get.Position, error) {
@@ -125,7 +127,7 @@ func GetPositionOrder(api env.Env, trade *bybit.Trades, order *bybit.Bot) {
 				if err != nil {
 					log.Println(err)
 				}
-			} else if trade.GetType((*order).Active[i].Symbol) == "Buy" && (*order).Active[i].Active == true{
+			} else if trade.GetType((*order).Active[i].Symbol) == "Buy" && (*order).Active[i].Active == true {
 				err := BuyTp(api, trade, (*order).Active[i].Symbol, order)
 				if err != nil {
 					log.Println(err)
@@ -137,5 +139,14 @@ func GetPositionOrder(api env.Env, trade *bybit.Trades, order *bybit.Bot) {
 			log.Println(print.PrettyPrint(order))
 		}
 		time.Sleep(5 * time.Second)
+	}
+}
+
+func UpdateChannel(updates tgbotapi.UpdatesChannel) {
+	for update := range updates {
+		log.Printf("test")
+		if update.Message != nil {
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		}
 	}
 }
