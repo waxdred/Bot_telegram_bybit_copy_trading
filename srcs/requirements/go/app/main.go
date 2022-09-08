@@ -7,6 +7,8 @@ import (
 	"bot/bybits/post"
 	"bot/bybits/telegram"
 	"bot/env"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,11 +24,20 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 			url := fmt.Sprint(
 				"https://api.telegram.org/bot",
 				api.Api_telegram,
-				"/sendMessage?text=",
-				msg,
-				"&chat_id=@trading_bybit_wax",
-			)
-			http.Get(url)
+				"/sendMessage")
+			params := map[string]string{
+				"text":    msg,
+				"chat_id": "@trading_bybit_wax",
+			}
+			json_data, err := json.Marshal(params)
+			if err != nil {
+				log.Println(err)
+			} else {
+				_, reqErr := http.Post(url, "application/json", bytes.NewBuffer(json_data))
+				if reqErr != nil {
+					log.Println(reqErr)
+				}
+			}
 
 		} else if update.ChannelPost != nil {
 			msg := update.ChannelPost.Text
