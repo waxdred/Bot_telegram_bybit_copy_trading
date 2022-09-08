@@ -38,9 +38,6 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 					log.Println(reqErr)
 				}
 			}
-
-		} else if update.ChannelPost != nil {
-			msg := update.ChannelPost.Text
 			log.Println(msg)
 			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
 			if err == nil && dataBybite.Trade {

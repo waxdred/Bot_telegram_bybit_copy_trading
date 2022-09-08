@@ -33,7 +33,7 @@ services:
           - API_ID=${API_ID}
           - API_HASH=${API_HASH}
           - ID_CHANNEL=${ID_CHANNEL} 
-          - MY_CHANNEL=${MY_CHANNEL} 
+          - SIGNAL_CHANNEL=${SIGNAL_CHANNEL} 
           - BOT_NAME=${BOT_NAME} 
         ports:
           - "40000:40000"

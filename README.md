@@ -16,23 +16,22 @@ touch srcs/.env
 ```
 ### add var
 ```bash
-API_TELEGRAM = "api of your bot telegram"
+#telegram info bot
+API_TELEGRAM = token_bot 
+BOT_NAME = @your_bot_name
 
-# api bybit
-API = "bybit api"
-API_SECRET = "bybit api_secret"
-# need stay in testnet 
-URL = "https://api-testnet.bybit.com"
+#telegram api compte
+API_ID = api_id_telegram 
+API_HASH = api_hash_telegram 
 
-#api telegram app
-API_ID = "api_id"
-API_HASH = "api_hash"
+#api bybit and url for testnet or normal
+API = api_bybit 
+API_SECRET = api_secret_bybit 
+URL = https://api-testnet.bybit.com
 
-# your channel id where you have your bot for send to bybirt
-MY_CHANNEL = "id channel"
-
-# id of the channel you want listen the signal work with only one for the moment
-ID_CHANNEL = "id channel"
+#channel telegram
+SIGNAL_CHANNEL = @channel_where_get_signal or 1909090909 
+ID_CHANNEL = @your_channel_to_print_signal_receive
 ```
 
 # Installation 
@@ -40,11 +39,13 @@ ID_CHANNEL = "id channel"
 ### Please setting your .env
 #### First run confirmation telegram api 
 ```bash
-  make init
+  #run ./configure for setting your .env and auth telegram
+  make
 ```
 
 #### Run app
 ```bash
+  #run docker and start the app
   make
 ```
 

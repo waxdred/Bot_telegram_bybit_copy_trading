@@ -16,7 +16,7 @@ class Telegram():
         self.api_id = os.getenv('API_ID')
         self.api_hash = os.getenv('API_HASH')
         self.id_channel = os.getenv('ID_CHANNEL')
-        self.my_channel = os.getenv('MY_CHANNEL')
+        self.my_channel = os.getenv('SIGNAL_CHANNEL')
         self.bot_name = os.getenv('BOT_NAME')
         self.session = "trading bot"
         self.proxy = None
