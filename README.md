@@ -12,7 +12,10 @@ To run this project, you will need to add the following environment variables to
 
 ## .env file
 ```bash
+#manually
 touch srcs/.env
+#or
+./configure
 ```
 ### add var
 ```bash
