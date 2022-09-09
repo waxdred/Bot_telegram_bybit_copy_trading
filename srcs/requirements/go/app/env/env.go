@@ -2,23 +2,60 @@ package env
 
 import (
 	"errors"
+	"log"
 	"os"
 )
 
+type BybitApi struct {
+	Api        string
+	Api_secret string
+}
+
 type Env struct {
-	Api          string
-	Api_secret   string
+	Api          []BybitApi
 	Api_telegram string
 	Url          string
 }
 
+func (t *Env) AddApi(api string, api_secret string) {
+	elem := BybitApi{
+		Api:        api,
+		Api_secret: api_secret,
+	}
+	(*t).Api = append((*t).Api, elem)
+}
+
+func (t *Env) Delette(api string) string {
+	ret := false
+	var tmp []BybitApi
+
+	for i := 0; i < len((*t).Api); i++ {
+		if (*t).Api[i].Api != api {
+			tmp = append(tmp, (*t).Api[i])
+		} else {
+			ret = true
+		}
+	}
+	(*t).Api = tmp
+	if ret == false {
+		return "Api not found cannot be deletted"
+	}
+	return "Api deletted"
+}
+
+func (t Env) ListApi() {
+	for i := 0; i < len(t.Api); i++ {
+		log.Println(t.Api[i])
+	}
+}
+
 func GetEnv(env *Env) error {
-	env.Api = os.Getenv("API")
-	if env.Api == "" {
+	api := os.Getenv("API")
+	if api == "" {
 		return errors.New("Api not found")
 	}
-	env.Api_secret = os.Getenv("API_SECRET")
-	if env.Api_secret == "" {
+	api_secret := os.Getenv("API_SECRET")
+	if api_secret == "" {
 		return errors.New("Api_secret not found")
 	}
 	env.Api_telegram = os.Getenv("API_TELEGRAM")
@@ -29,6 +66,7 @@ func GetEnv(env *Env) error {
 	if env.Url == "" {
 		return errors.New("Url not found")
 	}
+	env.AddApi(api, api_secret)
 	return nil
 }
 

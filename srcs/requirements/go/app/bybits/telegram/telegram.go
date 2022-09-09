@@ -95,3 +95,4 @@ func ParseMsg(msg string, debug bool) (Data, error) {
 	}
 	return data, errors.New("Error Parsing")
 }
+

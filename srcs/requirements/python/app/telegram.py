@@ -35,7 +35,9 @@ class Telegram():
                 t = t[:pos]
                 t = t.replace("\\n", "\n", -1)
                 print(t)
-                await self.client.send_message(self.bot_name ,message=t)
+                if t != self.msg:
+                    await self.client.send_message(self.bot_name ,message=t)
+                    self.msg = t
         return t
 
     def start(self):

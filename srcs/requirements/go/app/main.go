@@ -1,43 +1,24 @@
 package main
 
 import (
+	"bot/bybits/bot"
 	"bot/bybits/bybit"
 	"bot/bybits/get"
 	"bot/bybits/listen"
 	"bot/bybits/post"
 	"bot/bybits/telegram"
 	"bot/env"
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"log"
-	"net/http"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades, api env.Env, botapi *tgbotapi.BotAPI) {
+func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades, api env.Env) {
 	for update := range updates {
 		if update.Message != nil {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			msg := update.Message.Text
-			url := fmt.Sprint(
-				"https://api.telegram.org/bot",
-				api.Api_telegram,
-				"/sendMessage")
-			params := map[string]string{
-				"text":    msg,
-				"chat_id": "@trading_bybit_wax",
-			}
-			json_data, err := json.Marshal(params)
-			if err != nil {
-				log.Println(err)
-			} else {
-				_, reqErr := http.Post(url, "application/json", bytes.NewBuffer(json_data))
-				if reqErr != nil {
-					log.Println(reqErr)
-				}
-			}
+			bot.BotParseMsg(msg, update.Message.From.UserName, &api, order, update)
 			log.Println(msg)
 			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
 			if err == nil && dataBybite.Trade {
@@ -105,20 +86,20 @@ func main() {
 	log.Println(api)
 	order.NewBot(&trade, false)
 	log.Printf("Get api Ok")
-	botapi, err := tgbotapi.NewBotAPI(api.Api_telegram)
+	order.Botapi, err = tgbotapi.NewBotAPI(api.Api_telegram)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	botapi.Debug = order.Debeug
+	order.Botapi.Debug = order.Debeug
 
-	log.Printf("Authorized on account %s", botapi.Self.UserName)
+	log.Printf("Authorized on account %s", order.Botapi.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates := botapi.GetUpdatesChan(u)
+	order.Updates = order.Botapi.GetUpdatesChan(u)
 
 	go listen.GetPositionOrder(api, &trade, &order)
-	run(updates, &order, &trade, api, botapi)
+	run(order.Updates, &order, &trade, api)
 }
