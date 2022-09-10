@@ -40,6 +40,35 @@ services:
         networks:
              bot:
 
+  ###############################
+  #           mariadb           #
+  ###############################
+    mysql:
+        image: mariadb:latest
+        restart: always
+        container_name: db
+        environment:
+          - MYSQL_DATABASE=db
+          - MARIADB_USER=test 
+          - MARIADB_PASSWORD=test
+          - MARIADB_ROOT_PASSWORD=test
+        ports:
+          - "3306:3306"
+        env_file: .env
+        volumes:
+          - ${PWD}/mariadb:/var/lib/mysql
+        networks:
+             bot:
+
+
+# volumes:
+#   mariadb-volumes:
+#     driver: local
+#     driver_opts:
+#       device: ~/bot/mariadb/
+#       type: volume
+#       o: bind
+
 networks:
      bot:
         driver: bridge
