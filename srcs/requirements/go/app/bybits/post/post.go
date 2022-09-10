@@ -58,7 +58,7 @@ func sendPost(
 	params["take_profit"] = tp
 	params["qty"] = order
 	params["timestamp"] = print.GetTimestamp()
-	params["sign"] = sign.GetSignedinter(params, api.Api_secret)
+	params["sign"] = sign.GetSignedinter(params, api.Api[0].Api_secret)
 	json_data, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func PostIsoled(api env.Env, symbol string, trade *bybit.Trades, debug bool) err
 		"sell_leverage": 10,
 		"timestamp":     print.GetTimestamp(),
 	}
-	params["sign"] = sign.GetSignedinter(params, api.Api_secret)
+	params["sign"] = sign.GetSignedinter(params, api.Api[0].Api_secret)
 	json_data, err := json.Marshal(params)
 	if err != nil {
 		return err
@@ -124,7 +124,7 @@ func PostIsoled(api env.Env, symbol string, trade *bybit.Trades, debug bool) err
 
 func CancelOrder(symbol string, api env.Env, trade *bybit.Trades) error {
 	params := map[string]string{
-		"api_key": api.Api,
+		"api_key": api.Api[0].Api,
 		"symbol":  symbol,
 	}
 	err := PostCancelOrder(params, api)
@@ -139,7 +139,7 @@ func PostCancelOrder(params map[string]string, api env.Env) error {
 	var cancel PostCancel
 
 	params["timestamp"] = print.GetTimestamp()
-	params["sign"] = sign.GetSigned(params, api.Api_secret)
+	params["sign"] = sign.GetSigned(params, api.Api[0].Api_secret)
 	json_data, err := json.Marshal(params)
 	if err != nil {
 		return err
@@ -181,13 +181,13 @@ func ChangeLs(api env.Env, symbol string, sl string, side string) error {
 	log.Println(sl)
 	log.Println(side)
 	params := map[string]string{
-		"api_key":   api.Api,
+		"api_key":   api.Api[0].Api,
 		"symbol":    symbol,
 		"side":      side,
 		"stop_loss": sl,
 		"timestamp": print.GetTimestamp(),
 	}
-	params["sign"] = sign.GetSigned(params, api.Api_secret)
+	params["sign"] = sign.GetSigned(params, api.Api[0].Api_secret)
 	json_data, err := json.Marshal(params)
 	if err != nil {
 		return err

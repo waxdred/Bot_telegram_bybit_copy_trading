@@ -19,11 +19,11 @@ import (
 func GetPosition(api env.Env, trade *bybit.Trades, symbol string) (get.Position, error) {
 	var position get.Position
 	params := map[string]string{
-		"api_key":   api.Api,
+		"api_key":   api.Api[0].Api,
 		"symbol":    symbol,
 		"timestamp": print.GetTimestamp(),
 	}
-	params["sign"] = sign.GetSigned(params, api.Api_secret)
+	params["sign"] = sign.GetSigned(params, api.Api[0].Api_secret)
 	url := fmt.Sprint(
 		api.Url,
 		"/private/linear/position/list?api_key=",

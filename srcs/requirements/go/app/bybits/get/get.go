@@ -40,12 +40,12 @@ func GetPrice(symbol string, api env.Env) Price {
 func GetWallet(api env.Env) Wallet {
 	var wall Wallet
 	params := map[string]string{
-		"api_key":   api.Api,
+		"api_key":   api.Api[0].Api,
 		"coin":      "USDT",
 		"timestamp": print.GetTimestamp(),
 	}
 
-	signature := sign.GetSigned(params, api.Api_secret)
+	signature := sign.GetSigned(params, api.Api[0].Api)
 	url := fmt.Sprint(
 		api.Url,
 		"/v2/private/wallet/balance?api_key=",

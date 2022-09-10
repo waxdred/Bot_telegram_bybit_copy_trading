@@ -1,5 +1,7 @@
 package bybit
 
+import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
 type Trade struct {
 	Symbol      string   `json:"symbol"`
 	Type        string   `json:"type"`
@@ -21,9 +23,11 @@ type Trade struct {
 }
 
 type Bot struct {
-	Trades *Trades `json:"trades"`
-	Active []Start `json:"active"`
-	Debeug bool
+	Trades  *Trades
+	Active  []Start
+	Debeug  bool
+	Botapi  *tgbotapi.BotAPI
+	Updates tgbotapi.UpdatesChannel
 }
 
 type Start struct {
