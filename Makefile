@@ -15,4 +15,8 @@ fclean:
 	@-docker rmi go
 	@-docker system prune -a --force
 
+fvolume: 
+	@-docker volume prune
+	@-rm -rf ./mariadb/*
+
 re: down fclean all

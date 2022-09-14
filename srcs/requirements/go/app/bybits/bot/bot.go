@@ -3,6 +3,7 @@ package bot
 import (
 	"bot/bybits/bybit"
 	"bot/env"
+	"bot/mysql"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -44,7 +45,7 @@ func BotParseMsg(
 ) error {
 	if msg == "/help" {
 		sender := fmt.Sprint("/add      api:api_secret\n",
-			"/delette  api")
+			"/delete  api")
 		msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
 		order.Botapi.Send(msgs)
 	} else if strings.Index(msg, "/add ") > -1 {
@@ -52,17 +53,30 @@ func BotParseMsg(
 			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Error try again \n/add api:api_secret")
 			order.Botapi.Send(msgs)
 		} else {
+			var msgs tgbotapi.MessageConfig
 			api_bybit := msg[strings.Index(msg, " ")+1 : strings.Index(msg, ":")]
 			api_secret := msg[strings.Index(msg, ":")+1:]
 			api.AddApi(api_bybit, api_secret)
-			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Api add")
+			// add api to database
+			if mysql.CheckApi("db.api", order.Db, api_bybit) == true {
+				mysql.Insert(api_bybit, api_secret, "api", order.Db)
+				msgs = tgbotapi.NewMessage(update.Message.Chat.ID, "Api add")
+			} else {
+				msgs = tgbotapi.NewMessage(update.Message.Chat.ID, "Api are already add")
+			}
 			order.Botapi.Send(msgs)
 		}
-	} else if strings.Index(msg, "/delette") > -1 {
+	} else if strings.Index(msg, "/delete") > -1 {
 		msg = msg[strings.Index(msg, " ")+1:]
 		sender := api.Delette(msg)
-		msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-		order.Botapi.Send(msgs)
+		err := mysql.DbDelete("api", msg, order.Db)
+		if err != nil {
+			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
+			order.Botapi.Send(msgs)
+		} else {
+			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
+			order.Botapi.Send(msgs)
+		}
 	} else {
 		SendMsg(msg, "trading_bybit_wax", *api)
 	}

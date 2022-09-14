@@ -5,6 +5,8 @@ services:
   #           bot trading       #
   ###############################
     go:
+        depends_on:
+            - mysql
         image: go
         restart: always
         build:
@@ -49,11 +51,13 @@ services:
         container_name: db
         environment:
           - MYSQL_DATABASE=db
-          - MARIADB_USER=test 
-          - MARIADB_PASSWORD=test
-          - MARIADB_ROOT_PASSWORD=test
+          - MARIADB_USER=bot 
+          - MARIADB_PASSWORD=bot
+          - MARIADB_ROOT_PASSWORD=bot
         ports:
           - "3306:3306"
+        expose:
+          - "3306"
         env_file: .env
         volumes:
           - ${PWD}/mariadb:/var/lib/mysql

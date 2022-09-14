@@ -1,6 +1,10 @@
 package bybit
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	"database/sql"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
 
 type Trade struct {
 	Symbol      string   `json:"symbol"`
@@ -28,6 +32,7 @@ type Bot struct {
 	Debeug  bool
 	Botapi  *tgbotapi.BotAPI
 	Updates tgbotapi.UpdatesChannel
+	Db      *sql.DB
 }
 
 type Start struct {

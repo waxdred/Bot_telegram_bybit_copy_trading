@@ -5,6 +5,8 @@ import (
 	"bot/bybits/print"
 	"bot/bybits/telegram"
 	"bot/env"
+	"bot/mysql"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -15,13 +17,26 @@ type (
 	Trades []Trade
 )
 
-func (t *Bot) NewBot(trade *Trades, debeug bool) {
+func (t *Bot) NewBot(trade *Trades, api *env.Env, debeug bool) error {
+	var DbErr error
 	elem := Bot{
 		Trades: trade,
 		Active: nil,
 		Debeug: debeug,
 	}
+	// connection mysql
+	elem.Db, DbErr = mysql.DbConnect("root:bot@tcp(mysql:3306)/db")
+	if DbErr != nil {
+		return errors.New("Coudn't connect to database")
+	}
+	// check if table exits if not create it
+	mysql.CreateTable("api", "api", "api_secret", elem.Db, 100)
+	mysql.Select("db.api", elem.Db, api)
+	if mysql.CheckApi("db.api", elem.Db, api.Api[0].Api) == true {
+		mysql.Insert(api.Api[0].Api, api.Api[0].Api_secret, "db.api", elem.Db)
+	}
 	*t = elem
+	return nil
 }
 
 func (t *Bot) CheckPositon(pos get.Position) {

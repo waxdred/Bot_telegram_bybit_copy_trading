@@ -9,6 +9,7 @@ import (
 	"bot/bybits/telegram"
 	"bot/env"
 	"log"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -77,15 +78,28 @@ func main() {
 	var order bybit.Bot
 	var trade bybit.Trades
 
+	// waiting mysql running
+	log.Print("waiting mysql....")
+	time.Sleep(10 * time.Second)
+
 	// for show debeug set at true
+	// get var env in struct
 	err := env.LoadEnv(&api)
 	if err != nil {
-		log.Println(err)
-		log.Fatalf("Error cannot Read file .env")
+		log.Fatal("Error cannot Read file .env: ", err)
 	}
-	log.Println(api)
-	order.NewBot(&trade, false)
+
+	// get data sql set struct order
+	if order.NewBot(&trade, &api, false) != nil {
+		log.Fatalf("NewBot error: ")
+	}
+	defer order.Db.Close()
+
+	// print api find
+	api.ListApi()
 	log.Printf("Get api Ok")
+
+	// connection bot telegram
 	order.Botapi, err = tgbotapi.NewBotAPI(api.Api_telegram)
 	if err != nil {
 		log.Panic(err)

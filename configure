@@ -53,3 +53,4 @@ settingTelegram(){
 
 installEnv
 settingTelegram
+mkdir mariadb

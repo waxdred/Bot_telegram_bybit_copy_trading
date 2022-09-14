@@ -1,6 +1,7 @@
 package env
 
 import (
+	"bot/bybits/print"
 	"errors"
 	"log"
 	"os"
@@ -27,11 +28,12 @@ func (t *Env) AddApi(api string, api_secret string) {
 
 func (t *Env) Delette(api string) string {
 	ret := false
+	ls := (*t).Api
 	var tmp []BybitApi
 
-	for i := 0; i < len((*t).Api); i++ {
-		if (*t).Api[i].Api != api {
-			tmp = append(tmp, (*t).Api[i])
+	for i := 0; i < len(ls); i++ {
+		if ls[i].Api != api {
+			tmp = append(tmp, ls[i])
 		} else {
 			ret = true
 		}
@@ -45,7 +47,7 @@ func (t *Env) Delette(api string) string {
 
 func (t Env) ListApi() {
 	for i := 0; i < len(t.Api); i++ {
-		log.Println(t.Api[i])
+		log.Println(print.PrettyPrint(t.Api[i]))
 	}
 }
 

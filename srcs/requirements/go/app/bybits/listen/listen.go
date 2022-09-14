@@ -39,7 +39,6 @@ func GetPosition(api env.Env, trade *bybit.Trades, symbol string) (get.Position,
 		log.Panic(err)
 	}
 	json.Unmarshal(body, &position)
-	// log.Println(print.PrettyPrint(position))
 	return position, nil
 }
 
@@ -144,7 +143,6 @@ func GetPositionOrder(api env.Env, trade *bybit.Trades, order *bybit.Bot) {
 
 func UpdateChannel(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
-		log.Printf("test")
 		if update.Message != nil {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		}
