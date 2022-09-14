@@ -1,26 +1,105 @@
-package bybit
+package data
 
 import (
 	"bot/bybits/get"
 	"bot/bybits/print"
+	// "bot/mysql"
 	"bot/bybits/telegram"
-	"bot/env"
-	"bot/mysql"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"math"
 	"strconv"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+
+type BybitApi struct {
+	Api        string
+	Api_secret string
+	Trade      Trades
+}
+
+type Env struct {
+	Api          []BybitApi
+	Api_telegram string
+	Url          string
+}
+
+type Trade struct {
+	Symbol      string   `json:"symbol"`
+	Type        string   `json:"type"`
+	Order       string   `json:"order"`
+	SymbolPrice string   `json:"symbolPrice"`
+	Wallet      string   `json:"wallet"`
+	Price       string   `json:"price"`
+	Entry       string   `json:"entry"`
+	Leverage    string   `json:"leverage"`
+	Tp1Order    string   `json:"tp_1Order"`
+	Tp2Order    string   `json:"tp_2Order"`
+	Tp3Order    string   `json:"tp_3Order"`
+	Tp1         string   `json:"tp1"`
+	Tp2         string   `json:"tp2"`
+	Tp3         string   `json:"tp3"`
+	Sl          string   `json:"Sl"`
+	Id          []string `json:"id"`
+	Active      []string `json:"active"`
+}
+
+type Bot struct {
+	Active  []Start
+	Debeug  bool
+	Botapi  *tgbotapi.BotAPI
+	Updates tgbotapi.UpdatesChannel
+	Db      *sql.DB
+}
+
+type Start struct {
+	Symbol string
+	Active bool
+}
 
 type (
 	Trades []Trade
 )
 
-func (t *Bot) NewBot(trade *Trades, api *env.Env, debeug bool) error {
+func (t *Env) AddApi(api string, api_secret string) {
+	elem := BybitApi{
+		Api:        api,
+		Api_secret: api_secret,
+	}
+	(*t).Api = append((*t).Api, elem)
+}
+
+func (t *Env) Delette(api string) string {
+	ret := false
+	ls := (*t).Api
+	var tmp []BybitApi
+
+	for i := 0; i < len(ls); i++ {
+		if ls[i].Api != api {
+			tmp = append(tmp, ls[i])
+		} else {
+			ret = true
+		}
+	}
+	(*t).Api = tmp
+	if ret == false {
+		return "Api not found cannot be deletted"
+	}
+	return "Api deletted"
+}
+
+func (t Env) ListApi() {
+	for i := 0; i < len(t.Api); i++ {
+		log.Println(print.PrettyPrint(t.Api[i]))
+	}
+}
+
+func (t *Bot) NewBot(api *Env, debeug bool) error {
 	var DbErr error
 	elem := Bot{
-		Trades: trade,
 		Active: nil,
 		Debeug: debeug,
 	}
@@ -32,8 +111,10 @@ func (t *Bot) NewBot(trade *Trades, api *env.Env, debeug bool) error {
 	// check if table exits if not create it
 	mysql.CreateTable("api", "api", "api_secret", elem.Db, 100)
 	mysql.Select("db.api", elem.Db, api)
-	if mysql.CheckApi("db.api", elem.Db, api.Api[0].Api) == true {
-		mysql.Insert(api.Api[0].Api, api.Api[0].Api_secret, "db.api", elem.Db)
+	if len(api.Api) > 0 {
+		if mysql.CheckApi("db.api", elem.Db, api.Api[0].Api) == true {
+			mysql.Insert(api.Api[0].Api, api.Api[0].Api_secret, "db.api", elem.Db)
+		}
 	}
 	*t = elem
 	return nil
@@ -80,13 +161,6 @@ func (t *Bot) Delete(symbol string) {
 		}
 	}
 	(*t).Active = tmp
-}
-
-func RoundFloat(val float64, precision uint) string {
-	ratio := math.Pow(10, float64(precision))
-	ret := math.Round(val*ratio) / ratio
-	rets := fmt.Sprint(ret)
-	return rets
 }
 
 func (t *Trades) SetId(symbol string, id string) {
@@ -152,8 +226,8 @@ func GetTrade(symbol string, t *Trades) *Trade {
 	return nil
 }
 
-func (t *Trades) Add(api env.Env, data telegram.Data, price get.Price) bool {
-	wallet := get.GetWallet(api)
+func (t *Trades) Add(api BybitApi, data telegram.Data, price get.Price, url_bybit string) bool {
+	wallet := get.GetWallet(api.Api, api.Api_secret, url_bybit)
 	available := wallet.Result.Usdt.AvailableBalance / 3
 	prices, _ := strconv.ParseFloat(price.Result[0].BidPrice, 8)
 	log.Println(print.PrettyPrint(available))
@@ -334,4 +408,11 @@ func (t *Trades) GetId(symbol string) []string {
 		return ret.Id
 	}
 	return nil
+}
+
+func RoundFloat(val float64, precision uint) string {
+	ratio := math.Pow(10, float64(precision))
+	ret := math.Round(val*ratio) / ratio
+	rets := fmt.Sprint(ret)
+	return rets
 }

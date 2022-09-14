@@ -2,11 +2,11 @@ package main
 
 import (
 	"bot/bybits/bot"
-	"bot/bybits/bybit"
 	"bot/bybits/get"
 	"bot/bybits/listen"
 	"bot/bybits/post"
 	"bot/bybits/telegram"
+	"bot/data"
 	"bot/env"
 	"log"
 	"time"
@@ -14,7 +14,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades, api env.Env) {
+func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api data.Env) {
 	for update := range updates {
 		if update.Message != nil {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
@@ -23,49 +23,53 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 			log.Println(msg)
 			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
 			if err == nil && dataBybite.Trade {
-				price := get.GetPrice(dataBybite.Currency, api)
+				price := get.GetPrice(dataBybite.Currency, api.Url)
 				if price.RetCode == 0 && price.Result[0].BidPrice != "" {
-					if trade.Add(api, dataBybite, price) {
-						post.PostIsoled(api, dataBybite.Currency, trade, order.Debeug)
-						err = post.PostOrder(dataBybite.Currency, api, trade, order.Debeug)
-						if err != nil {
-							log.Println(err)
-							trade.Delete(dataBybite.Currency)
+					for _, apis := range api.Api {
+						if apis.Trade.Add(apis, dataBybite, price, api.Url) {
+							post.PostIsoled(apis, dataBybite.Currency, &apis.Trade, api.Url, order.Debeug)
+							err = post.PostOrder(dataBybite.Currency, apis, &apis.Trade, api.Url, order.Debeug)
+							if err != nil {
+								log.Println(err)
+								apis.Trade.Delete(dataBybite.Currency)
+							} else {
+								order.AddActive(dataBybite.Currency)
+							}
 						} else {
-							order.AddActive(dataBybite.Currency)
+							if order.Debeug {
+								log.Printf("You trade already this Symbol")
+							}
 						}
-					} else {
 						if order.Debeug {
-							log.Printf("You trade already this Symbol")
+							apis.Trade.Print()
 						}
-					}
-					if order.Debeug {
-						trade.Print()
 					}
 				} else {
 					log.Printf("Symbol not found")
 				}
 			} else if err == nil && dataBybite.Cancel {
-				cancelErr := post.CancelOrder(dataBybite.Currency, api, trade)
-				if cancelErr != nil {
-					log.Println(cancelErr)
-				}
-				trd := bybit.GetTrade(dataBybite.Currency, trade)
-				if trd != nil {
-					px := get.GetPrice(dataBybite.Currency, api)
-					sl := post.CancelBySl(px, trd)
-					if sl != "" {
-						lsErr := post.ChangeLs(api, dataBybite.Currency, sl, trd.Type)
-						if lsErr != nil {
-							log.Println(lsErr)
-						} else {
-							log.Printf("Cancel Position ok")
-						}
+				for _, apis := range api.Api {
+					cancelErr := post.CancelOrder(dataBybite.Currency, apis, &apis.Trade, api.Url)
+					if cancelErr != nil {
+						log.Println(cancelErr)
 					}
-					log.Println(cancelErr)
+					trd := data.GetTrade(dataBybite.Currency, &apis.Trade)
+					if trd != nil {
+						px := get.GetPrice(dataBybite.Currency, api.Url)
+						sl := post.CancelBySl(px, trd)
+						if sl != "" {
+							lsErr := post.ChangeLs(apis, dataBybite.Currency, sl, trd.Type, api.Url)
+							if lsErr != nil {
+								log.Println(lsErr)
+							} else {
+								log.Printf("Cancel Position ok")
+							}
+						}
+						log.Println(cancelErr)
+					}
+					apis.Trade.Delete(dataBybite.Currency)
+					order.Delete(dataBybite.Currency)
 				}
-				trade.Delete(dataBybite.Currency)
-				order.Delete(dataBybite.Currency)
 			} else if order.Debeug {
 				log.Printf("Error Parsing")
 			}
@@ -74,9 +78,8 @@ func run(updates tgbotapi.UpdatesChannel, order *bybit.Bot, trade *bybit.Trades,
 }
 
 func main() {
-	var api env.Env
-	var order bybit.Bot
-	var trade bybit.Trades
+	var api data.Env
+	var order data.Bot
 
 	// waiting mysql running
 	log.Print("waiting mysql....")
@@ -90,7 +93,7 @@ func main() {
 	}
 
 	// get data sql set struct order
-	if order.NewBot(&trade, &api, false) != nil {
+	if order.NewBot(&api, false) != nil {
 		log.Fatalf("NewBot error: ")
 	}
 	defer order.Db.Close()

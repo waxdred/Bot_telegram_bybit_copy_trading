@@ -1,8 +1,7 @@
 package bot
 
 import (
-	"bot/bybits/bybit"
-	"bot/env"
+	"bot/data"
 	"bot/mysql"
 	"bytes"
 	"encoding/json"
@@ -14,7 +13,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func SendMsg(msg string, user string, api env.Env) error {
+func SendMsg(msg string, user string, api data.Env) error {
 	url := fmt.Sprint(
 		"https://api.telegram.org/bot",
 		api.Api_telegram,
@@ -39,8 +38,8 @@ func SendMsg(msg string, user string, api env.Env) error {
 func BotParseMsg(
 	msg string,
 	user string,
-	api *env.Env,
-	order *bybit.Bot,
+	api *data.Env,
+	order *data.Bot,
 	update tgbotapi.Update,
 ) error {
 	if msg == "/help" {

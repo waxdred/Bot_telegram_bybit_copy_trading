@@ -3,7 +3,6 @@ package get
 import (
 	"bot/bybits/print"
 	"bot/bybits/sign"
-	"bot/env"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -23,9 +22,9 @@ func GetRequetJson(url string) ([]byte, error) {
 	return body, err
 }
 
-func GetPrice(symbol string, api env.Env) Price {
+func GetPrice(symbol string, url_bybit string) Price {
 	var curr Price
-	url := fmt.Sprint(api.Url, "/v2/public/tickers?symbol=", symbol)
+	url := fmt.Sprint(url_bybit, "/v2/public/tickers?symbol=", symbol)
 	body, err := GetRequetJson(url)
 	if err != nil {
 		log.Panic(err)
@@ -37,19 +36,19 @@ func GetPrice(symbol string, api env.Env) Price {
 	return curr
 }
 
-func GetWallet(api env.Env) Wallet {
+func GetWallet(api string, api_secret string, url_bybit string) Wallet {
 	var wall Wallet
 	params := map[string]string{
-		"api_key":   api.Api[0].Api,
+		"api_key":   api,
 		"coin":      "USDT",
 		"timestamp": print.GetTimestamp(),
 	}
 
-	signature := sign.GetSigned(params, api.Api[0].Api)
+	signature := sign.GetSigned(params, api_secret)
 	url := fmt.Sprint(
-		api.Url,
+		url_bybit,
 		"/v2/private/wallet/balance?api_key=",
-		api.Api,
+		api,
 		"&coin=USDT",
 		"&timestamp=",
 		params["timestamp"],

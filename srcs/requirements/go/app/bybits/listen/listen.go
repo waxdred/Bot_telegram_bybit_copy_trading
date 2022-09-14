@@ -1,12 +1,11 @@
 package listen
 
 import (
-	"bot/bybits/bybit"
 	"bot/bybits/get"
 	"bot/bybits/post"
 	"bot/bybits/print"
 	"bot/bybits/sign"
-	"bot/env"
+	"bot/data"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -16,16 +15,16 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func GetPosition(api env.Env, trade *bybit.Trades, symbol string) (get.Position, error) {
+func GetPosition(api data.BybitApi, symbol string, url_bybite string) (get.Position, error) {
 	var position get.Position
 	params := map[string]string{
-		"api_key":   api.Api[0].Api,
+		"api_key":   api.Api,
 		"symbol":    symbol,
 		"timestamp": print.GetTimestamp(),
 	}
-	params["sign"] = sign.GetSigned(params, api.Api[0].Api_secret)
+	params["sign"] = sign.GetSigned(params, api.Api_secret)
 	url := fmt.Sprint(
-		api.Url,
+		url_bybite,
 		"/private/linear/position/list?api_key=",
 		params["api_key"],
 		"&symbol=", symbol,
@@ -42,8 +41,8 @@ func GetPosition(api env.Env, trade *bybit.Trades, symbol string) (get.Position,
 	return position, nil
 }
 
-func BuyTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) error {
-	price := get.GetPrice(symbol, api)
+func BuyTp(api data.BybitApi, trade *data.Trades, symbol string, order *data.Bot, url_bybite string) error {
+	price := get.GetPrice(symbol, url_bybite)
 	lastPrice, _ := strconv.ParseFloat(price.Result[0].LastPrice, 64)
 	sl, _ := strconv.ParseFloat(trade.GetSl(symbol), 64)
 	tp1, _ := strconv.ParseFloat(trade.GetTp1(symbol), 64)
@@ -61,13 +60,13 @@ func BuyTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) er
 		trade.Delete(symbol)
 		order.Delete(symbol)
 	} else if lastPrice >= tp2 {
-		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol), trade.GetType(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol), trade.GetType(symbol), url_bybite)
 		if err == nil {
 			trade.SetSl(symbol, trade.GetTp2(symbol))
 			log.Printf("%s: Tp2 😎", symbol)
 		}
 	} else if lastPrice >= tp1 {
-		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol), trade.GetType(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol), trade.GetType(symbol), url_bybite)
 		if err == nil {
 			trade.SetSl(symbol, trade.GetTp1(symbol))
 			log.Printf("%s: Tp1 😎", symbol)
@@ -79,8 +78,8 @@ func BuyTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) er
 	return nil
 }
 
-func SellTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) error {
-	price := get.GetPrice(symbol, api)
+func SellTp(api data.BybitApi, trade *data.Trades, symbol string, order *data.Bot, url_bybite string) error {
+	price := get.GetPrice(symbol, url_bybite)
 	lastPrice, _ := strconv.ParseFloat(price.Result[0].LastPrice, 64)
 	sl, _ := strconv.ParseFloat(trade.GetSl(symbol), 64)
 	tp1, _ := strconv.ParseFloat(trade.GetTp1(symbol), 64)
@@ -98,13 +97,13 @@ func SellTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) e
 		order.Delete(symbol)
 		log.Printf("%s: All take-profit targets achieved 😎: ", symbol)
 	} else if lastPrice <= tp2 {
-		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol), trade.GetType(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp2(symbol), trade.GetType(symbol), url_bybite)
 		if err == nil {
 			trade.SetSl(symbol, trade.GetTp2(symbol))
 			log.Printf("%s: Tp2 😎", symbol)
 		}
 	} else if lastPrice <= tp1 {
-		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol), trade.GetType(symbol))
+		err = post.ChangeLs(api, symbol, trade.GetTp1(symbol), trade.GetType(symbol), url_bybite)
 		if err == nil {
 			trade.SetSl(symbol, trade.GetTp1(symbol))
 			log.Printf("%s: Tp1 😎", symbol)
@@ -116,28 +115,30 @@ func SellTp(api env.Env, trade *bybit.Trades, symbol string, order *bybit.Bot) e
 	return nil
 }
 
-func GetPositionOrder(api env.Env, trade *bybit.Trades, order *bybit.Bot) {
+func GetPositionOrder(api data.Env, order *data.Bot) {
 	for ok := true; ok; {
 		for i := 0; i < len((*order).Active); i++ {
-			pos, _ := GetPosition(api, trade, (*order).Active[i].Symbol)
-			order.CheckPositon(pos)
-			if trade.GetType((*order).Active[i].Symbol) == "Sell" && (*order).Active[i].Active == true {
-				err := SellTp(api, trade, (*order).Active[i].Symbol, order)
-				if err != nil {
-					log.Println(err)
+			for _, apis := range api.Api {
+				pos, _ := GetPosition(apis, (*order).Active[i].Symbol, api.Url)
+				order.CheckPositon(pos)
+				if apis.Trade.GetType((*order).Active[i].Symbol) == "Sell" && (*order).Active[i].Active == true {
+					err := SellTp(apis, &apis.Trade, (*order).Active[i].Symbol, order, api.Url)
+					if err != nil {
+						log.Println(err)
+					}
+				} else if apis.Trade.GetType((*order).Active[i].Symbol) == "Buy" && (*order).Active[i].Active == true {
+					err := BuyTp(apis, &apis.Trade, (*order).Active[i].Symbol, order, api.Url)
+					if err != nil {
+						log.Println(err)
+					}
 				}
-			} else if trade.GetType((*order).Active[i].Symbol) == "Buy" && (*order).Active[i].Active == true {
-				err := BuyTp(api, trade, (*order).Active[i].Symbol, order)
-				if err != nil {
-					log.Println(err)
+				if order.Debeug {
+					log.Println(print.PrettyPrint(apis.Trade))
+					log.Println(print.PrettyPrint(order))
 				}
 			}
 		}
-		if order.Debeug {
-			log.Println(print.PrettyPrint(trade))
-			log.Println(print.PrettyPrint(order))
-		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
 
