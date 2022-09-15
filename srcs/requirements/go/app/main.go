@@ -121,6 +121,6 @@ func main() {
 
 	order.Updates = order.Botapi.GetUpdatesChan(u)
 
-	go listen.GetPositionOrder(api, &order)
+	go listen.GetPositionOrder(&api, &order)
 	run(order.Updates, &order, api)
 }

@@ -118,6 +118,7 @@ func (t *Bot) CheckPositon(pos get.Position) {
 	if pos.Result[0].StopLoss > 0 || pos.Result[1].StopLoss > 0 {
 		for i := 0; i < len((*t).Active); i++ {
 			if (*t).Active[i].Symbol == pos.Result[0].Symbol {
+				log.Printf("%s: Position Open", (*t).Active[i].Symbol)
 				(*t).Active[i].Active = true
 			} else {
 				(*t).Active[i].Active = false

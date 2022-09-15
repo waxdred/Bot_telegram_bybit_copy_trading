@@ -115,10 +115,12 @@ func SellTp(api data.BybitApi, trade *data.Trades, symbol string, order *data.Bo
 	return nil
 }
 
-func GetPositionOrder(api data.Env, order *data.Bot) {
+func GetPositionOrder(api *data.Env, order *data.Bot) {
 	for ok := true; ok; {
 		for i := 0; i < len((*order).Active); i++ {
+			log.Print("len order ok:")
 			for _, apis := range api.Api {
+				log.Print("api: while")
 				pos, _ := GetPosition(apis, (*order).Active[i].Symbol, api.Url)
 				order.CheckPositon(pos)
 				if apis.Trade.GetType((*order).Active[i].Symbol) == "Sell" && (*order).Active[i].Active == true {
