@@ -52,6 +52,10 @@ func BuyTp(api data.BybitApi, trade *data.Trades, symbol string, order *data.Bot
 	var err error
 
 	err = nil
+	log.Println(sl)
+	log.Println(tp1)
+	log.Println(tp2)
+	log.Println(tp3)
 	if lastPrice <= sl {
 		trade.Delete(symbol)
 		order.Delete(symbol)
@@ -123,21 +127,24 @@ func GetPositionOrder(api *data.Env, order *data.Bot) {
 		}
 		log.Println()
 		for _, ord := range (*order).Active {
-			log.Print("len order ok:")
 			for _, apis := range api.Api {
-				log.Print("api: while")
 				pos, err := GetPosition(apis, ord.Symbol, api.Url)
 				if err == nil {
 					order.CheckPositon(pos)
-					if apis.Trade.GetType(ord.Symbol) == "Sell" && ord.Active == true {
-						err := SellTp(apis, &apis.Trade, ord.Symbol, order, api.Url)
-						if err != nil {
-							log.Println(err)
-						}
-					} else if apis.Trade.GetType(ord.Symbol) == "Buy" && ord.Active == true {
-						err := BuyTp(apis, &apis.Trade, ord.Symbol, order, api.Url)
-						if err != nil {
-							log.Println(err)
+					log.Println(apis.Trade.GetType(ord.Symbol))
+					for _, trade := range apis.Trade {
+						if trade.Symbol == ord.Symbol && trade.Type == "Sell" && ord.Active == true {
+							log.Printf("Entry Sell  type")
+							err := SellTp(apis, &apis.Trade, ord.Symbol, order, api.Url)
+							if err != nil {
+								log.Println(err)
+							}
+						} else if trade.Symbol == ord.Symbol && trade.Type == "Buy" && ord.Active == true {
+							log.Printf("Entry Buy  type")
+							err := BuyTp(apis, &apis.Trade, ord.Symbol, order, api.Url)
+							if err != nil {
+								log.Println(err)
+							}
 						}
 					}
 				} else {

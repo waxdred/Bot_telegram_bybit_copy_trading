@@ -115,15 +115,11 @@ func (t *Bot) NewBot(api *Env, debeug bool) error {
 }
 
 func (t *Bot) CheckPositon(pos get.Position) {
-	log.Println(pos.Result[0].Size)
-	log.Println(pos.Result[1].Size)
 	if pos.Result[0].Size > 0 || pos.Result[1].Size > 0 {
 		for i := 0; i < len((*t).Active); i++ {
 			if (*t).Active[i].Symbol == pos.Result[0].Symbol {
-				log.Printf("%s: Position Open", (*t).Active[i].Symbol)
 				(*t).Active[i].Active = true
 			} else {
-				log.Printf("%s: Position close", (*t).Active[i].Symbol)
 				(*t).Active[i].Active = false
 			}
 		}
