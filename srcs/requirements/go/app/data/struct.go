@@ -3,13 +3,13 @@ package data
 import (
 	"bot/bybits/get"
 	"bot/bybits/print"
-	// "bot/mysql"
 	"bot/bybits/telegram"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"math"
+	"os"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -98,23 +98,9 @@ func (t Env) ListApi() {
 }
 
 func (t *Bot) NewBot(api *Env, debeug bool) error {
-	var DbErr error
 	elem := Bot{
 		Active: nil,
 		Debeug: debeug,
-	}
-	// connection mysql
-	elem.Db, DbErr = mysql.DbConnect("root:bot@tcp(mysql:3306)/db")
-	if DbErr != nil {
-		return errors.New("Coudn't connect to database")
-	}
-	// check if table exits if not create it
-	mysql.CreateTable("api", "api", "api_secret", elem.Db, 100)
-	mysql.Select("db.api", elem.Db, api)
-	if len(api.Api) > 0 {
-		if mysql.CheckApi("db.api", elem.Db, api.Api[0].Api) == true {
-			mysql.Insert(api.Api[0].Api, api.Api[0].Api_secret, "db.api", elem.Db)
-		}
 	}
 	*t = elem
 	return nil
@@ -415,4 +401,33 @@ func RoundFloat(val float64, precision uint) string {
 	ret := math.Round(val*ratio) / ratio
 	rets := fmt.Sprint(ret)
 	return rets
+}
+
+func GetEnv(env *Env) error {
+	api := os.Getenv("API")
+	if api == "" {
+		return errors.New("Api not found")
+	}
+	api_secret := os.Getenv("API_SECRET")
+	if api_secret == "" {
+		return errors.New("Api_secret not found")
+	}
+	env.Api_telegram = os.Getenv("API_TELEGRAM")
+	if env.Api_telegram == "" {
+		return errors.New("Api_telegram not found")
+	}
+	env.Url = os.Getenv("URL")
+	if env.Url == "" {
+		return errors.New("Url not found")
+	}
+	env.AddApi(api, api_secret)
+	return nil
+}
+
+func LoadEnv(env *Env) error {
+	err := GetEnv(env)
+	if err != nil {
+		return err
+	}
+	return nil
 }

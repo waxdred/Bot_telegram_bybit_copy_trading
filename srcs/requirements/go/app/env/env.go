@@ -1,7 +1,6 @@
 package env
 
 import (
-	"bot/data"
 	"errors"
 	"os"
 )

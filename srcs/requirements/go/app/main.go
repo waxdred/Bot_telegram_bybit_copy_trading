@@ -7,7 +7,7 @@ import (
 	"bot/bybits/post"
 	"bot/bybits/telegram"
 	"bot/data"
-	"bot/env"
+	"bot/mysql"
 	"log"
 	"time"
 
@@ -87,7 +87,7 @@ func main() {
 
 	// for show debeug set at true
 	// get var env in struct
-	err := env.LoadEnv(&api)
+	err := data.LoadEnv(&api)
 	if err != nil {
 		log.Fatal("Error cannot Read file .env: ", err)
 	}
@@ -95,6 +95,10 @@ func main() {
 	// get data sql set struct order
 	if order.NewBot(&api, false) != nil {
 		log.Fatalf("NewBot error: ")
+	}
+	err = mysql.ConnectionDb(&order, &api)
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer order.Db.Close()
 
@@ -117,6 +121,6 @@ func main() {
 
 	order.Updates = order.Botapi.GetUpdatesChan(u)
 
-	go listen.GetPositionOrder(api, &trade, &order)
-	run(order.Updates, &order, &trade, api)
+	go listen.GetPositionOrder(api, &order)
+	run(order.Updates, &order, api)
 }
