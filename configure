@@ -41,6 +41,7 @@ installEnv(){
 		echo "Your channel group for share the signal id exemple 1708830683 or @name_channel"
 		read api
 		echo "ID = $api" >> $FILE
+		echo "MARIADB_ROOT_PWD=test" >> $FILE
 	fi
 }
 
