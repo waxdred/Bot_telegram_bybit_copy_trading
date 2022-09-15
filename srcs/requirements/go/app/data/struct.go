@@ -65,11 +65,19 @@ type (
 )
 
 func (t *Env) AddApi(api string, api_secret string) {
+	check := false
 	elem := BybitApi{
 		Api:        api,
 		Api_secret: api_secret,
 	}
-	(*t).Api = append((*t).Api, elem)
+	for _, ls := range (*t).Api {
+		if ls.Api == elem.Api {
+			check = true
+		}
+	}
+	if check == false {
+		(*t).Api = append((*t).Api, elem)
+	}
 }
 
 func (t *Env) Delette(api string) string {
