@@ -35,9 +35,11 @@ func GetPosition(api data.BybitApi, symbol string, url_bybite string) (get.Posit
 	)
 	body, err := get.GetRequetJson(url)
 	if err != nil {
-		log.Panic(err)
+		log.Panicln(err)
+		return position, err
 	}
 	json.Unmarshal(body, &position)
+	log.Panicln(print.PrettyPrint(position))
 	return position, nil
 }
 
@@ -117,19 +119,23 @@ func SellTp(api data.BybitApi, trade *data.Trades, symbol string, order *data.Bo
 
 func GetPositionOrder(api *data.Env, order *data.Bot) {
 	for ok := true; ok; {
-		for i := 0; i < len((*order).Active); i++ {
+		for _, o := range (*order).Active {
+			log.Println(o)
+		}
+		log.Println()
+		for _, ord := range (*order).Active {
 			log.Print("len order ok:")
 			for _, apis := range api.Api {
 				log.Print("api: while")
-				pos, _ := GetPosition(apis, (*order).Active[i].Symbol, api.Url)
+				pos, _ := GetPosition(apis, ord.Symbol, api.Url)
 				order.CheckPositon(pos)
-				if apis.Trade.GetType((*order).Active[i].Symbol) == "Sell" && (*order).Active[i].Active == true {
-					err := SellTp(apis, &apis.Trade, (*order).Active[i].Symbol, order, api.Url)
+				if apis.Trade.GetType(ord.Symbol) == "Sell" && ord.Active == true {
+					err := SellTp(apis, &apis.Trade, ord.Symbol, order, api.Url)
 					if err != nil {
 						log.Println(err)
 					}
-				} else if apis.Trade.GetType((*order).Active[i].Symbol) == "Buy" && (*order).Active[i].Active == true {
-					err := BuyTp(apis, &apis.Trade, (*order).Active[i].Symbol, order, api.Url)
+				} else if apis.Trade.GetType(ord.Symbol) == "Buy" && ord.Active == true {
+					err := BuyTp(apis, &apis.Trade, ord.Symbol, order, api.Url)
 					if err != nil {
 						log.Println(err)
 					}
