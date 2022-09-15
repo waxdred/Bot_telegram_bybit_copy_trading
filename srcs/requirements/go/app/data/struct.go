@@ -115,9 +115,9 @@ func (t *Bot) NewBot(api *Env, debeug bool) error {
 }
 
 func (t *Bot) CheckPositon(pos get.Position) {
-	log.Println(pos.Result[0].StopLoss)
-	log.Println(pos.Result[1].StopLoss)
-	if pos.Result[0].StopLoss > 0 || pos.Result[1].StopLoss > 0 {
+	log.Println(pos.Result[0].Size)
+	log.Println(pos.Result[1].Size)
+	if pos.Result[0].Size > 0 || pos.Result[1].Size > 0 {
 		for i := 0; i < len((*t).Active); i++ {
 			if (*t).Active[i].Symbol == pos.Result[0].Symbol {
 				log.Printf("%s: Position Open", (*t).Active[i].Symbol)
