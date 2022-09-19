@@ -14,24 +14,23 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api data.Env) {
+func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api *data.Env, trade *data.Trades) {
 	for update := range updates {
 		if update.Message != nil {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			msg := update.Message.Text
-			bot.BotParseMsg(msg, update.Message.From.UserName, &api, order, update)
-			log.Println(msg)
+			bot.BotParseMsg(msg, update.Message.From.UserName, api, order, update)
 			dataBybite, err := telegram.ParseMsg(msg, order.Debeug)
 			if err == nil && dataBybite.Trade {
 				price := get.GetPrice(dataBybite.Currency, api.Url)
 				if price.RetCode == 0 && price.Result[0].BidPrice != "" {
 					for _, apis := range api.Api {
-						if apis.Trade.Add(apis, dataBybite, price, api.Url) {
-							post.PostIsoled(apis, dataBybite.Currency, &apis.Trade, api.Url, order.Debeug)
-							err = post.PostOrder(dataBybite.Currency, apis, &apis.Trade, api.Url, order.Debeug)
+						if trade.Add(apis, dataBybite, price, api.Url) == true {
+							post.PostIsoled(apis, dataBybite.Currency, trade, api.Url, order.Debeug)
+							err = post.PostOrder(dataBybite.Currency, apis, trade, api.Url, order.Debeug)
 							if err != nil {
 								log.Println(err)
-								apis.Trade.Delete(dataBybite.Currency)
+								trade.Delete(dataBybite.Currency)
 							} else {
 								order.AddActive(dataBybite.Currency)
 							}
@@ -41,7 +40,7 @@ func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api data.Env) {
 							}
 						}
 						if order.Debeug {
-							apis.Trade.Print()
+							trade.Print()
 						}
 					}
 				} else {
@@ -49,11 +48,11 @@ func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api data.Env) {
 				}
 			} else if err == nil && dataBybite.Cancel {
 				for _, apis := range api.Api {
-					cancelErr := post.CancelOrder(dataBybite.Currency, apis, &apis.Trade, api.Url)
+					cancelErr := post.CancelOrder(dataBybite.Currency, apis, trade, api.Url)
 					if cancelErr != nil {
 						log.Println(cancelErr)
 					}
-					trd := data.GetTrade(dataBybite.Currency, &apis.Trade)
+					trd := data.GetTrade(dataBybite.Currency, trade)
 					if trd != nil {
 						px := get.GetPrice(dataBybite.Currency, api.Url)
 						sl := post.CancelBySl(px, trd)
@@ -67,7 +66,7 @@ func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api data.Env) {
 						}
 						log.Println(cancelErr)
 					}
-					apis.Trade.Delete(dataBybite.Currency)
+					trade.Delete(dataBybite.Currency)
 					order.Delete(dataBybite.Currency)
 				}
 			} else if order.Debeug {
@@ -80,10 +79,11 @@ func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api data.Env) {
 func main() {
 	var api data.Env
 	var order data.Bot
+	var trade data.Trades
 
 	// waiting mysql running
 	log.Print("waiting mysql....")
-	time.Sleep(10 * time.Second)
+	time.Sleep(6 * time.Second)
 
 	// for show debeug set at true
 	// get var env in struct
@@ -121,6 +121,6 @@ func main() {
 
 	order.Updates = order.Botapi.GetUpdatesChan(u)
 
-	go listen.GetPositionOrder(&api, &order)
-	run(order.Updates, &order, api)
+	go listen.GetPositionOrder(&api, &order, &trade)
+	run(order.Updates, &order, &api, &trade)
 }

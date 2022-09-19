@@ -16,6 +16,7 @@ services:
             - API=${API}
             - API_SECRET=${API_SECRET}
             - API_TELEGRAM=${API_TELEGRAM}
+            - ID_CHANNEL=${ID_CHANNEL} 
             - URL=${URL}
         ports:
           - "30000:30000"

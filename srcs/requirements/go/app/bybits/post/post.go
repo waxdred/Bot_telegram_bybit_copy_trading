@@ -79,9 +79,7 @@ func sendPost(
 	if res.RetCode != 0 {
 		return nil, errors.New(res.RetMsg)
 	}
-	if debug {
-		log.Println(print.PrettyPrint(res))
-	}
+	log.Println(print.PrettyPrint(res))
 	trade.SetId(params["symbol"].(string), res.Result.OrderID)
 	delete(params, "sign")
 	delete(params, "take_profit")
@@ -202,6 +200,7 @@ func ChangeLs(api data.BybitApi, symbol string, sl string, side string, url_bybi
 		return err
 	}
 	json.NewDecoder(req.Body).Decode(&stop)
+	log.Print("ChangeLs:")
 	log.Println(print.PrettyPrint(stop))
 	return nil
 }

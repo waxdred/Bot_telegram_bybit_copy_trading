@@ -63,10 +63,16 @@ func FuturParse(msg string, debug bool, data Data) (Data, error) {
 		}
 		if strings.Index(tab[i], "TP1") > 0 {
 			data.Tp1 = tab[i][strings.Index(tab[i], "- ")+2:]
+			log.Print("Tp1:")
+			log.Print(data.Tp1)
 		} else if strings.Index(tab[i], "TP2") > 0 {
 			data.Tp2 = tab[i][strings.Index(tab[i], "- ")+2:]
+			log.Print("Tp2:")
+			log.Print(data.Tp2)
 		} else if strings.Index(tab[i], "TP3") > 0 {
 			data.Tp3 = tab[i][strings.Index(tab[i], "- ")+2:]
+			log.Print("Tp3:")
+			log.Print(data.Tp3)
 		} else if strings.Index(tab[i], "SL") > 0 {
 			data.Sl = tab[i][strings.Index(tab[i], "SL")+3:]
 		} else if strings.Index(tab[i], "Leverage") > 0 {

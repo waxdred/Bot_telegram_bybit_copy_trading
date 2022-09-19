@@ -1,6 +1,7 @@
 package env
 
 import (
+	"bot/data"
 	"errors"
 	"os"
 )
@@ -21,6 +22,10 @@ func GetEnv(env *data.Env) error {
 	env.Url = os.Getenv("URL")
 	if env.Url == "" {
 		return errors.New("Url not found")
+	}
+	env.BotName = os.Getenv("ID_CHANNEL")
+	if env.BotName == "" {
+		return errors.New("Bot name not found")
 	}
 	env.AddApi(api, api_secret)
 	return nil

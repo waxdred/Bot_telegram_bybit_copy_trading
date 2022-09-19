@@ -15,18 +15,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type BybitApi struct {
-	Api        string
-	Api_secret string
-	Trade      Trades
-}
-
-type Env struct {
-	Api          []BybitApi
-	Api_telegram string
-	Url          string
-}
-
 type Trade struct {
 	Symbol      string   `json:"symbol"`
 	Type        string   `json:"type"`
@@ -47,6 +35,22 @@ type Trade struct {
 	Active      []string `json:"active"`
 }
 
+type (
+	Trades []Trade
+)
+
+type BybitApi struct {
+	Api        string
+	Api_secret string
+}
+
+type Env struct {
+	Api          []BybitApi
+	Api_telegram string
+	Url          string
+	BotName      string
+}
+
 type Bot struct {
 	Active  []Start
 	Debeug  bool
@@ -59,10 +63,6 @@ type Start struct {
 	Symbol string
 	Active bool
 }
-
-type (
-	Trades []Trade
-)
 
 func (t *Env) AddApi(api string, api_secret string) {
 	check := false
@@ -115,12 +115,18 @@ func (t *Bot) NewBot(api *Env, debeug bool) error {
 }
 
 func (t *Bot) CheckPositon(pos get.Position) {
-	if pos.Result[0].Size > 0 || pos.Result[1].Size > 0 {
-		for i := 0; i < len((*t).Active); i++ {
-			if (*t).Active[i].Symbol == pos.Result[0].Symbol {
-				(*t).Active[i].Active = true
-			} else {
-				(*t).Active[i].Active = false
+	if len(pos.Result) > 0 {
+		if pos.Result[0].EntryPrice > 0 || pos.Result[1].EntryPrice > 0 ||
+			pos.Result[0].LiqPrice > 0 || pos.Result[1].LiqPrice > 0 ||
+			pos.Result[0].BustPrice > 0 || pos.Result[1].BustPrice > 0 {
+			log.Print("Entry PRice ok")
+			for i := 0; i < len((*t).Active); i++ {
+				if (*t).Active[i].Symbol == pos.Result[0].Symbol {
+					(*t).Active[i].Active = true
+					log.Print("Trade actif")
+				} else {
+					(*t).Active[i].Active = false
+				}
 			}
 		}
 	}
@@ -132,6 +138,16 @@ func (t Bot) GetActive() []string {
 		tmp = append(tmp, t.Active[i].Symbol)
 	}
 	return tmp
+}
+
+func (t *Bot) GetActiveSymbol(symbol string) bool {
+	ret := false
+	for _, ls := range (*t).Active {
+		if ls.Symbol == symbol {
+			ret = ls.Active
+		}
+	}
+	return ret
 }
 
 func (t *Bot) AddActive(symbol string) {
@@ -165,6 +181,10 @@ func (t *Trades) SetId(symbol string, id string) {
 			ls[i].Id = append(ls[i].Id, id)
 		}
 	}
+}
+
+func (t *Trades) GetTrades() *Trades {
+	return t
 }
 
 func (t *Trades) SetSl(symbol string, sl string) {
@@ -275,11 +295,19 @@ func (t *Trades) Print() {
 	}
 }
 
+func (t *Trades) GetLen() int {
+	ls := *t
+
+	return len(ls)
+}
+
 // get Trade
-func (t *Trades) GetSymbol(symbol string) string {
-	ret := GetTrade(symbol, t)
-	if ret != nil {
-		return ret.Symbol
+func (t *Trades) GetSymbol(index int) string {
+	ls := *t
+	for i := 0; i < len(ls); i++ {
+		if i == index {
+			return ls[i].Symbol
+		}
 	}
 	return ""
 }

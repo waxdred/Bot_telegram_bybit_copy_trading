@@ -13,11 +13,13 @@ import (
 func GetRequetJson(url string) ([]byte, error) {
 	req, err := http.Get(url)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
+		return nil, err
 	}
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
+		return nil, err
 	}
 	return body, err
 }
@@ -27,11 +29,13 @@ func GetPrice(symbol string, url_bybit string) Price {
 	url := fmt.Sprint(url_bybit, "/v2/public/tickers?symbol=", symbol)
 	body, err := GetRequetJson(url)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
+		return curr
 	}
 	jsonErr := json.Unmarshal(body, &curr)
 	if jsonErr != nil {
-		log.Panic(jsonErr)
+		log.Println(jsonErr)
+		return curr
 	}
 	return curr
 }
@@ -57,11 +61,13 @@ func GetWallet(api string, api_secret string, url_bybit string) Wallet {
 	)
 	body, err := GetRequetJson(url)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
+		return wall
 	}
 	jsonErr := json.Unmarshal(body, &wall)
 	if jsonErr != nil {
-		log.Panic(jsonErr)
+		log.Println(jsonErr)
+		return wall
 	}
 	return (wall)
 }
