@@ -51,6 +51,9 @@ func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api *data.Env, trade 
 					cancelErr := post.CancelOrder(dataBybite.Currency, apis, trade, api.Url)
 					if cancelErr != nil {
 						log.Println(cancelErr)
+					} else {
+						trade.Delete(dataBybite.Currency)
+						order.Delete(dataBybite.Currency)
 					}
 					trd := data.GetTrade(dataBybite.Currency, trade)
 					if trd != nil {
@@ -61,13 +64,11 @@ func run(updates tgbotapi.UpdatesChannel, order *data.Bot, api *data.Env, trade 
 							if lsErr != nil {
 								log.Println(lsErr)
 							} else {
-								log.Printf("Cancel Position ok")
+								log.Printf("Change sl for cancel position ok")
 							}
 						}
 						log.Println(cancelErr)
 					}
-					trade.Delete(dataBybite.Currency)
-					order.Delete(dataBybite.Currency)
 				}
 			} else if order.Debeug {
 				log.Printf("Error Parsing")
