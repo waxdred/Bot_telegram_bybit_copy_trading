@@ -100,6 +100,25 @@ func (t *Env) Delette(api string) string {
 	return "Api deletted"
 }
 
+func (t *Env) DeletteAdmin(adm string) string {
+	ret := false
+	ls := (*t).Admin
+	var tmp []string
+
+	for i := 0; i < len(ls); i++ {
+		if ls[i] != adm {
+			tmp = append(tmp, ls[i])
+		} else {
+			ret = true
+		}
+	}
+	(*t).Admin = tmp
+	if ret == false {
+		return "Admin not found cannot be deletted"
+	}
+	return "Admin deletted"
+}
+
 func (t Env) ListApi() {
 	for i := 0; i < len(t.Api); i++ {
 		log.Println(print.PrettyPrint(t.Api[i]))

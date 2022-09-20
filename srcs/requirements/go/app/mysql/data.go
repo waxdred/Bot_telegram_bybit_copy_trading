@@ -168,6 +168,22 @@ func DbDelete(tablename string, api string, db *sql.DB) error {
 	return nil
 }
 
+func DbDeleteAdmin(tablename string, adm string, db *sql.DB) error {
+	dbDelette := fmt.Sprintf("DELETE FROM `db`.`admin` WHERE `admin` = ?")
+	drop, err := db.Prepare(dbDelette)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	_, err = drop.Exec(adm)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	defer drop.Close()
+	return nil
+}
+
 func CreateTable(tablename string, db1 string, db2 string, db *sql.DB, size int64) {
 	dbCreate := fmt.Sprint(
 		"CREATE TABLE `db`.`",

@@ -46,7 +46,9 @@ func BotParseMsg(
 		sending := true
 		if msg == "/help" && user == adm {
 			sender := fmt.Sprint("/add      api:api_secret\n",
-				"/delete  api")
+				"/delete  api\n",
+				"/addAdmin login\n",
+				"/deleteAdmin login")
 			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
 			order.Botapi.Send(msgs)
 		} else if strings.Index(msg, "/add ") > -1 {
@@ -71,6 +73,29 @@ func BotParseMsg(
 			msg = msg[strings.Index(msg, " ")+1:]
 			sender := api.Delette(msg)
 			err := mysql.DbDelete("api", msg, order.Db)
+			if err != nil {
+				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
+				order.Botapi.Send(msgs)
+			} else {
+				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
+				order.Botapi.Send(msgs)
+			}
+		} else if strings.Index(msg, "/addAdmin") > -1 && user == adm {
+			admin := msg[strings.Index(msg, " ")+1:]
+			api.AddAdmin(admin)
+			// add api to database
+			if mysql.CheckAdmin("db.admin", order.Db, admin) == true {
+				mysql.InsertAdmin(admin, "admin", order.Db)
+				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Admin add")
+				order.Botapi.Send(msgs)
+			} else {
+				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Api are already add")
+				order.Botapi.Send(msgs)
+			}
+		} else if strings.Index(msg, "/deleteAdmin") > -1 && user == adm {
+			msg = msg[strings.Index(msg, " ")+1:]
+			sender := api.DeletteAdmin(msg)
+			err := mysql.DbDeleteAdmin("admin", msg, order.Db)
 			if err != nil {
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
 				order.Botapi.Send(msgs)
