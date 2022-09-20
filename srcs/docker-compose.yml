@@ -13,11 +13,12 @@ services:
             context: ./requirements/go/
             dockerfile: Dockerfile 
         environment:
+            # - ID_CHANNEL=${ID_CHANNEL} 
             - API=${API}
             - API_SECRET=${API_SECRET}
             - API_TELEGRAM=${API_TELEGRAM}
-            - ID_CHANNEL=${ID_CHANNEL} 
             - URL=${URL}
+            - ADMIN=${ADMIN}
         ports:
           - "30000:30000"
         networks:
@@ -33,9 +34,9 @@ services:
             context: ./requirements/python/
             dockerfile: Dockerfile 
         environment:
+          # - ID_CHANNEL=${ID_CHANNEL} 
           - API_ID=${API_ID}
           - API_HASH=${API_HASH}
-          - ID_CHANNEL=${ID_CHANNEL} 
           - SIGNAL_CHANNEL=${SIGNAL_CHANNEL} 
           - BOT_NAME=${BOT_NAME} 
         ports:
@@ -64,15 +65,6 @@ services:
           - ${PWD}/mariadb:/var/lib/mysql
         networks:
              bot:
-
-
-# volumes:
-#   mariadb-volumes:
-#     driver: local
-#     driver_opts:
-#       device: ~/bot/mariadb/
-#       type: volume
-#       o: bind
 
 networks:
      bot:
