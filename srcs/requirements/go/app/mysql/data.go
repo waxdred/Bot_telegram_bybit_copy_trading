@@ -18,7 +18,7 @@ func ConnectionDb(order *data.Bot, api *data.Env) error {
 		return errors.New("Coudn't connect to database")
 	}
 	// check if table exits if not create it
-	CreateTable("admin", "admin", "admin", order.Db, 100)
+	CreateTable("admin", "admin", "admin1", order.Db, 100)
 	CreateTable("api", "api", "api_secret", order.Db, 100)
 	SelectApi("db.api", order.Db, api)
 	SelectAdmin("db.admin", order.Db, api)
@@ -36,7 +36,7 @@ func ConnectionDb(order *data.Bot, api *data.Env) error {
 }
 
 func InsertApi(api string, api_secret string, dbname string, db *sql.DB) error {
-	dbInsert := fmt.Sprint("Insert INTO `db`.`", dbname, "` (api, api_secret) VALUES (?, ?)")
+	dbInsert := fmt.Sprint("Insert INTO `db`.`api` (api, api_secret) VALUES (?, ?)")
 	insert, err := db.Prepare(dbInsert)
 	if err != nil {
 		log.Println(err)
@@ -52,7 +52,7 @@ func InsertApi(api string, api_secret string, dbname string, db *sql.DB) error {
 }
 
 func InsertAdmin(adm string, dbname string, db *sql.DB) error {
-	dbInsert := fmt.Sprint("Insert INTO `db`.`", dbname, "` (admin, admin) VALUES (?, ?)")
+	dbInsert := fmt.Sprint("Insert INTO `db`.`admin` (admin, admin1) VALUES (?, ?)")
 	insert, err := db.Prepare(dbInsert)
 	if err != nil {
 		log.Println(err)
@@ -169,7 +169,7 @@ func DbDelete(tablename string, api string, db *sql.DB) error {
 }
 
 func CreateTable(tablename string, db1 string, db2 string, db *sql.DB, size int64) {
-	dbCreate := fmt.Sprintf(
+	dbCreate := fmt.Sprint(
 		"CREATE TABLE `db`.`",
 		tablename,
 		"` (`id` INT NOT NULL AUTO_INCREMENT,`",
