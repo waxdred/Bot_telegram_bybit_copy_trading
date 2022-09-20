@@ -42,42 +42,46 @@ func BotParseMsg(
 	order *data.Bot,
 	update tgbotapi.Update,
 ) error {
-	if msg == "/help" {
-		sender := fmt.Sprint("/add      api:api_secret\n",
-			"/delete  api")
-		msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-		order.Botapi.Send(msgs)
-	} else if strings.Index(msg, "/add ") > -1 {
-		if strings.Index(msg, ":") < 0 {
-			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Error try again \n/add api:api_secret")
+	for _, adm := range api.Admin {
+		sending := true
+		if msg == "/help" && user == adm {
+			sender := fmt.Sprint("/add      api:api_secret\n",
+				"/delete  api")
+			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
 			order.Botapi.Send(msgs)
-		} else {
-			var msgs tgbotapi.MessageConfig
-			api_bybit := msg[strings.Index(msg, " ")+1 : strings.Index(msg, ":")]
-			api_secret := msg[strings.Index(msg, ":")+1:]
-			api.AddApi(api_bybit, api_secret)
-			// add api to database
-			if mysql.CheckApi("db.api", order.Db, api_bybit) == true {
-				mysql.Insert(api_bybit, api_secret, "api", order.Db)
-				msgs = tgbotapi.NewMessage(update.Message.Chat.ID, "Api add")
+		} else if strings.Index(msg, "/add ") > -1 {
+			if strings.Index(msg, ":") < 0 {
+				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Error try again \n/add api:api_secret")
+				order.Botapi.Send(msgs)
 			} else {
-				msgs = tgbotapi.NewMessage(update.Message.Chat.ID, "Api are already add")
+				var msgs tgbotapi.MessageConfig
+				api_bybit := msg[strings.Index(msg, " ")+1 : strings.Index(msg, ":")]
+				api_secret := msg[strings.Index(msg, ":")+1:]
+				api.AddApi(api_bybit, api_secret)
+				// add api to database
+				if mysql.CheckApi("db.api", order.Db, api_bybit) == true {
+					mysql.InsertApi(api_bybit, api_secret, "api", order.Db)
+					msgs = tgbotapi.NewMessage(update.Message.Chat.ID, "Api add")
+				} else {
+					msgs = tgbotapi.NewMessage(update.Message.Chat.ID, "Api are already add")
+				}
+				order.Botapi.Send(msgs)
 			}
-			order.Botapi.Send(msgs)
+		} else if strings.Index(msg, "/delete") > -1 && user == adm {
+			msg = msg[strings.Index(msg, " ")+1:]
+			sender := api.Delette(msg)
+			err := mysql.DbDelete("api", msg, order.Db)
+			if err != nil {
+				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
+				order.Botapi.Send(msgs)
+			} else {
+				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
+				order.Botapi.Send(msgs)
+			}
+		} else if sending == true {
+			SendMsg(msg, "trading_bybit_wax", *api)
+			sending = false
 		}
-	} else if strings.Index(msg, "/delete") > -1 {
-		msg = msg[strings.Index(msg, " ")+1:]
-		sender := api.Delette(msg)
-		err := mysql.DbDelete("api", msg, order.Db)
-		if err != nil {
-			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-			order.Botapi.Send(msgs)
-		} else {
-			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-			order.Botapi.Send(msgs)
-		}
-	} else {
-		SendMsg(msg, "trading_bybit_wax", *api)
 	}
 	return nil
 }
