@@ -46,6 +46,7 @@ type BybitApi struct {
 
 type Env struct {
 	Api          []BybitApi
+	Admin        []string
 	Api_telegram string
 	Url          string
 	BotName      string
@@ -439,6 +440,10 @@ func RoundFloat(val float64, precision uint) string {
 	return rets
 }
 
+func (t *Env) AddAdmin(admin string) {
+	t.Admin = append(t.Admin, admin)
+}
+
 func GetEnv(env *Env) error {
 	api := os.Getenv("API")
 	if api == "" {
@@ -456,6 +461,11 @@ func GetEnv(env *Env) error {
 	if env.Url == "" {
 		return errors.New("Url not found")
 	}
+	admin := os.Getenv("ADMIN")
+	if admin == "" {
+		return errors.New("Admin not found")
+	}
+	env.AddAdmin(admin)
 	env.AddApi(api, api_secret)
 	return nil
 }
