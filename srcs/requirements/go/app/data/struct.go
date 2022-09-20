@@ -50,6 +50,7 @@ type Env struct {
 	Api_telegram string
 	Url          string
 	BotName      string
+	IdCHannel    string
 }
 
 type Bot struct {
@@ -483,6 +484,16 @@ func GetEnv(env *Env) error {
 	admin := os.Getenv("ADMIN")
 	if admin == "" {
 		return errors.New("Admin not found")
+	}
+	env.BotName = os.Getenv("BOT_NAME")
+	if env.BotName == "" {
+		return errors.New("Bot name not found")
+	}
+	env.IdCHannel = os.Getenv("ID_CHANNEL")
+	log.Println("env id ")
+	log.Println(env.IdCHannel)
+	if env.IdCHannel == "" {
+		return errors.New("Your channel name not found")
 	}
 	env.AddAdmin(admin)
 	env.AddApi(api, api_secret)

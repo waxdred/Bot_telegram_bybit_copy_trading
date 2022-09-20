@@ -50,11 +50,17 @@ func BotParseMsg(
 				"/addAdmin login\n",
 				"/deleteAdmin login")
 			msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-			order.Botapi.Send(msgs)
-		} else if strings.Index(msg, "/add ") == len("/add ") {
+			if sending == true {
+				sending = false
+				order.Botapi.Send(msgs)
+			}
+		} else if strings.Index(msg, " ") == 4 && strings.Compare(msg, "/add ") == 1 && user == adm {
 			if strings.Index(msg, ":") < 0 {
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Error try again \n/add api:api_secret")
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			} else {
 				var msgs tgbotapi.MessageConfig
 				api_bybit := msg[strings.Index(msg, " ")+1 : strings.Index(msg, ":")]
@@ -67,44 +73,65 @@ func BotParseMsg(
 				} else {
 					msgs = tgbotapi.NewMessage(update.Message.Chat.ID, "Api are already add")
 				}
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			}
-		} else if strings.Index(msg, "/delete ") == len("/delete ") && user == adm {
+		} else if strings.Index(msg, " ") == 7 && strings.Compare(msg, "/delete ") == 1 && user == adm {
 			msg = msg[strings.Index(msg, " ")+1:]
 			sender := api.Delette(msg)
 			err := mysql.DbDelete("api", msg, order.Db)
 			if err != nil {
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			} else {
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			}
-		} else if strings.Index(msg, "/addAdmin ") == len("/addAdmin ") && user == adm {
+		} else if strings.Index(msg, " ") == 9 && strings.Compare(msg, "/addAdmin ") == 1 && user == adm {
 			admin := msg[strings.Index(msg, " ")+1:]
 			api.AddAdmin(admin)
 			// add api to database
 			if mysql.CheckAdmin("db.admin", order.Db, admin) == true {
 				mysql.InsertAdmin(admin, "admin", order.Db)
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Admin add")
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			} else {
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, "Api are already add")
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			}
-		} else if strings.Index(msg, "/deleteAdmin ") == len("/deleteAdmin ") && user == adm {
+		} else if strings.Index(msg, " ") == 12 && strings.Compare(msg, "/deleteAdmin ") == 1 && user == adm {
 			msg = msg[strings.Index(msg, " ")+1:]
 			sender := api.DeletteAdmin(msg)
 			err := mysql.DbDeleteAdmin("admin", msg, order.Db)
 			if err != nil {
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			} else {
 				msgs := tgbotapi.NewMessage(update.Message.Chat.ID, sender)
-				order.Botapi.Send(msgs)
+				if sending == true {
+					sending = false
+					order.Botapi.Send(msgs)
+				}
 			}
 		} else if sending == true {
-			SendMsg(msg, "trading_bybit_wax", *api)
+			SendMsg(msg, api.IdCHannel, *api)
 			sending = false
 		}
 	}
