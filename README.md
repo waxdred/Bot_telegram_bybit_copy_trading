@@ -1,6 +1,10 @@
 
 # Bot bybit
 
+```
+https://excalidraw.com/#room=768ac4b0d44b4cd3dd9a,q4d4_c1kbPPIurq-a1QmCg
+```
+
 #### Bot for make copy trading from signal telegram and send to Bybit the order
 #### * Check the price of currency
 #### * Change stop lost when tp
