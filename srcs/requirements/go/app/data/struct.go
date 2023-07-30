@@ -50,6 +50,7 @@ type Env struct {
 	Api_telegram string
 	Url          string
 	BotName      string
+	IdCHannel    string
 }
 
 type Bot struct {
@@ -98,6 +99,25 @@ func (t *Env) Delette(api string) string {
 		return "Api not found cannot be deletted"
 	}
 	return "Api deletted"
+}
+
+func (t *Env) DeletteAdmin(adm string) string {
+	ret := false
+	ls := (*t).Admin
+	var tmp []string
+
+	for i := 0; i < len(ls); i++ {
+		if ls[i] != adm {
+			tmp = append(tmp, ls[i])
+		} else {
+			ret = true
+		}
+	}
+	(*t).Admin = tmp
+	if ret == false {
+		return "Admin not found cannot be deletted"
+	}
+	return "Admin deletted"
 }
 
 func (t Env) ListApi() {
@@ -464,6 +484,16 @@ func GetEnv(env *Env) error {
 	admin := os.Getenv("ADMIN")
 	if admin == "" {
 		return errors.New("Admin not found")
+	}
+	env.BotName = os.Getenv("BOT_NAME")
+	if env.BotName == "" {
+		return errors.New("Bot name not found")
+	}
+	env.IdCHannel = os.Getenv("ID_CHANNEL")
+	log.Println("env id ")
+	log.Println(env.IdCHannel)
+	if env.IdCHannel == "" {
+		return errors.New("Your channel name not found")
 	}
 	env.AddAdmin(admin)
 	env.AddApi(api, api_secret)

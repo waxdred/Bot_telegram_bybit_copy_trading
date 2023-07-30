@@ -17,8 +17,10 @@ services:
             - API=${API}
             - API_SECRET=${API_SECRET}
             - API_TELEGRAM=${API_TELEGRAM}
+            - BOT_NAME=${BOT_NAME}
             - URL=${URL}
             - ADMIN=${ADMIN}
+            - ID_CHANNEL=${ID_CHANNEL}
         ports:
           - "30000:30000"
         networks:

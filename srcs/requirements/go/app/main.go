@@ -104,7 +104,6 @@ func main() {
 	defer order.Db.Close()
 
 	// print api find
-	api.ListApi()
 	log.Printf("Get api Ok")
 
 	// connection bot telegram
